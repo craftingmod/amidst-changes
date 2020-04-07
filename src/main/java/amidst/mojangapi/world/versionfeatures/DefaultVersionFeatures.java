@@ -28,6 +28,7 @@ import amidst.mojangapi.world.oracle.HeuristicWorldSpawnOracle;
 import amidst.mojangapi.world.oracle.SlimeChunkOracle;
 
 import static amidst.mojangapi.world.biome.BiomeType.*;
+import static amidst.mojangapi.world.biome.Biome.*;
 
 public enum DefaultVersionFeatures {
 	;
@@ -100,7 +101,21 @@ public enum DefaultVersionFeatures {
 				).construct())
 			
 			.with(FeatureKey.BIOME_LIST, VersionFeature.biomeListBuilder()
-				.init( // Starts at beta 1.8
+				.init( // Because pre beta 1.8 biomes did not have ids, we assign them negative ids based on their biome colors so they never clash with newer biomes
+					new Biome(rainforestOld, "Rainforest", BLANK),
+					new Biome(swamplandOld, "Swampland", BLANK),
+					new Biome(seasonalForestOld, "Seasonal Forest", BLANK),
+					new Biome(forestOld, "Forest", BLANK),
+					new Biome(savannaOld, "Savanna", BLANK),
+					new Biome(shrublandOld, "Shrubland", BLANK),
+					new Biome(taigaOld, "Taiga", BLANK),
+					new Biome(desertOld, "Desert", BLANK),
+					new Biome(plainsOld, "Plains", BLANK),
+					new Biome(iceDesertOld, "Ice Desert", BLANK),
+					new Biome(tundraOld, "Tundra", BLANK),
+					new Biome(hellOld, "Hell", BLANK),
+					new Biome(skyOld, "Sky", BLANK)
+				).since(RecognisedVersion._b1_8_1, // Closest to beta 1.8, Modern biomes start at beta 1.8
 					new Biome(0, "Ocean", OCEAN),
 					new Biome(1, "Plains", PLAINS),
 					new Biome(2, "Desert", PLAINS_FLAT),

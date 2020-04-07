@@ -18,6 +18,7 @@ public class BiomeType {
 	public static final BiomeType BEACH_CLIFFS      = new BiomeType( 0.1F,   0.8F);
 	public static final BiomeType ISLAND            = new BiomeType( 0.2F,   0.3F);
 	public static final BiomeType SWAMPLAND         = new BiomeType(-0.2F,   0.1F);
+	public static final BiomeType BLANK             = new BiomeType( 0.0F,   0.0F);
 	// @formatter:on
 
 	private final float biomeDepth;

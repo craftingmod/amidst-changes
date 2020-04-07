@@ -1,5 +1,6 @@
 package amidst.mojangapi.world.biome;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,7 +52,6 @@ public class Biome {
 	public static final int mesaPlateauF         = 38;
 	public static final int mesaPlateau          = 39;
 
-	//TODO: find better colors for The End biomes
 	public static final int theEndLow            = 40;
 	public static final int theEndMedium         = 41;
 	public static final int theEndHigh           = 42;
@@ -95,8 +95,27 @@ public class Biome {
 	public static final int crimsonForest        = 171;
 	public static final int warpedForest         = 172;
 	
+	// Pre beta 1.8 biomes didn't have IDs, so we detect them with their colors and assign them negative ids so they will never clash with new ids
+	public static final int rainforestOld        = -1;
+	public static final int swamplandOld         = -2;
+	public static final int seasonalForestOld    = -3;
+	public static final int forestOld            = -4;
+	public static final int savannaOld           = -5;
+	public static final int shrublandOld         = -6;
+	public static final int taigaOld             = -7;
+	public static final int desertOld            = -8;
+	public static final int plainsOld            = -9;
+	public static final int iceDesertOld         = -10;
+	public static final int tundraOld            = -11;
+	public static final int hellOld              = -12;
+	public static final int skyOld               = -13;
+	
 	public static List<Biome> getBiomeListFromIdList(BiomeList biomeList, List<Integer> idList) {
 		return idList.stream().map(i -> biomeList.getByIdOrNull(i)).collect(Collectors.toList());
+	}
+	
+	public static Comparator<Integer> biomeIdComparator() {
+		return (a,b) -> Integer.compare(Math.abs(a), Math.abs(b));
 	}
 
 	private final int id;

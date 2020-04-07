@@ -28,7 +28,7 @@ public enum _b1_7_3ClassTranslator {
 					c.searchForLong(0xffffffL)
 				)
 				.thenDeclareRequired(CLASS_WORLD)
-					.requiredConstructor(CONSTRUCTOR_WORLD).symbolic(CLASS_I_SAVE_HANDLER).real("java.lang.String").real("long").end()
+					.requiredConstructor(CONSTRUCTOR_WORLD).symbolic(CLASS_I_SAVE_HANDLER).real("String").real("long").end()
 			.next()
 				.ifDetect(c -> 
 					c.searchForUtf8EqualTo("Plains")
@@ -41,14 +41,23 @@ public enum _b1_7_3ClassTranslator {
 				)
 				.thenDeclareRequired(CLASS_WORLD_CHUNK_MANAGER)
 					.requiredConstructor(CONSTRUCTOR_WORLD_CHUNK_MANAGER).symbolic(CLASS_WORLD).end()
-					.requiredMethod(METHOD_WORLD_CHUNK_MANAGER_GET_BIOME_GEN_AT, "a").real("int").real("int").end()
+					.requiredMethod(METHOD_WORLD_CHUNK_MANAGER_GET_BIOMES, "a").real("int").real("int").real("int").real("int").end()
+					.requiredField(FIELD_WORLD_CHUNK_MANAGER_TEMPERATURE, "a")
+			.next()
+				.ifDetect(c -> 
+					c.searchForLong(0x1ef1565bd5L)
+					&& c.searchForDouble(1.3999999999999999D)
+					&& c.searchForDouble(0.29999999999999999D)
+				)
+				.thenDeclareRequired(CLASS_CHUNK_PROVIDER_GENERATOR)
+					.requiredConstructor(CONSTRUCTOR_CHUNK_PROVIDER_GENERATOR).symbolic(CLASS_WORLD).real("long").end()
+					.requiredField(FIELD_CHUNK_PROVIDER_GENERATOR_RANDOM, "j")
+					.requiredMethod(METHOD_CHUNK_PROVIDER_GENERATOR_PRODUCE_NOISE, "a").realArray("double", 1).real("int").real("int").real("int").real("int").real("int").real("int").end()
 			.construct();
 	}
 	
 	public boolean extract(amidst.clazz.real.RealClass c) {
-		System.out.println(c.getRealClassName());
 		if(c.getRealClassName().equals("fd")) {
-			System.out.println();
 			return true;
 		}
 		return false;
