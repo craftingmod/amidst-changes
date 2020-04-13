@@ -37,11 +37,11 @@ public class BiomeProfileDirectory {
 		return Files.isDirectory(root);
 	}
 
-	public void visitProfiles(BiomeProfileVisitor visitor) {
-		visitProfiles(root, visitor);
+	public boolean visitProfiles(BiomeProfileVisitor visitor) {
+		return visitProfiles(root, visitor);
 	}
 
-	private void visitProfiles(Path directory, BiomeProfileVisitor visitor) {
+	private boolean visitProfiles(Path directory, BiomeProfileVisitor visitor) {
 		boolean[] entered = new boolean[]{ false };
 
 		try {
@@ -66,6 +66,8 @@ public class BiomeProfileDirectory {
 		if (entered[0]) {
 			visitor.leaveDirectory();
 		}
+		
+		return entered[0];
 	}
 
 	private BiomeProfile createFromFile(Path file) {
@@ -76,7 +78,17 @@ public class BiomeProfileDirectory {
 			}
 			AmidstLogger.warn("Profile invalid, ignoring: {}", file);
 		} catch (IOException | FormatException e) {
-			AmidstLogger.warn(e, "Unable to load file: {}", file);
+			try {
+				BiomeProfile newProfile = JsonReader.readLocation(file, BiomeProfileOld.class).convertToNewFormat();
+				if(newProfile.validate()) {
+					newProfile.save(file);
+					AmidstLogger.info("Profile converted to new format: {}", file);
+					return newProfile;
+				}
+				AmidstLogger.warn("Profile invalid, ignoring: {}", file);
+			} catch (Exception e1) {
+				AmidstLogger.warn(e, "Unable to load file: {}", file);
+			}
 		}
 		return null;
 	}

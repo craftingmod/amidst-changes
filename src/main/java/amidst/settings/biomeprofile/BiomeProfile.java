@@ -3,21 +3,17 @@ package amidst.settings.biomeprofile;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.CharStreams;
 
 import amidst.documentation.GsonConstructor;
 import amidst.documentation.Immutable;
@@ -27,11 +23,19 @@ import amidst.parsing.FormatException;
 import amidst.parsing.json.JsonReader;
 
 @Immutable
-public class BiomeProfile {
+public class BiomeProfile implements Serializable {
+	private static final long serialVersionUID = 656038328314515511L;
+
 	private static BiomeProfile createDefaultProfile() {
 		final String profileFile = "/amidst/mojangapi/default_biome_profile.json";
-		try (InputStream stream = BiomeProfile.class.getResourceAsStream(profileFile)) {
-			return JsonReader.readString(CharStreams.toString(new InputStreamReader(stream, Charsets.UTF_8)), BiomeProfile.class);
+		try (InputStream stream = BiomeProfile.class.getResourceAsStream(profileFile)) { // For some reason this is the only way we can read the file from inside and outside the jar
+			try (Scanner scanner = new Scanner(stream)) {
+				StringBuffer buffer = new StringBuffer();
+				while(scanner.hasNext()){
+					buffer.append(scanner.nextLine());
+				}
+				return JsonReader.readString(buffer.toString(), BiomeProfile.class);
+			}
 		} catch (IOException | FormatException e) {
 			throw new RuntimeException("Unable to create default biome profile", e);
 		}
@@ -39,6 +43,10 @@ public class BiomeProfile {
 
 	public static BiomeProfile getDefaultProfile() {
 		return DEFAULT_PROFILE;
+	}
+	
+	public static BiomeProfile createExampleProfile() {
+		return new BiomeProfile("example", "control E", DEFAULT_PROFILE.colorMap);
 	}
 
 	private static final BiomeProfile DEFAULT_PROFILE = createDefaultProfile();
@@ -49,6 +57,12 @@ public class BiomeProfile {
 
 	@GsonConstructor
 	public BiomeProfile() {
+	}
+	
+	BiomeProfile(String name, String shortcut, Map<Integer, BiomeColorJson> colorMap) {
+		this.name = name;
+		this.shortcut = shortcut;
+		this.colorMap = colorMap;
 	}
 
 	public String getName() {
@@ -83,9 +97,10 @@ public class BiomeProfile {
 		return writeToFile(file, serialize());
 	}
 
-	private String serialize() {
-		String output = "{ \"name\":\"" + name + "\", \"colorMap\":[\r\n";
-		output += serializeColorMap();
+	public String serialize() {
+		String output = "{ \"name\":\"" + name + "\", ";
+		output += shortcut != null ? "\"shortcut\":\"" + shortcut + "\", " : "";
+		output += "\"colorMap\":[\r\n" + serializeColorMap();
 		return output + " ] }\r\n";
 	}
 
@@ -96,7 +111,7 @@ public class BiomeProfile {
 	private String serializeColorMap() {
 		String output = "";
 		for (Map.Entry<Integer, BiomeColorJson> pairs : getSortedColorMapEntries()) {
-			output += "[ \"" + pairs.getKey() + "\", { ";
+			output += "[ " + pairs.getKey() + ", { ";
 			output += "\"r\":" + pairs.getValue().getR() + ", ";
 			output += "\"g\":" + pairs.getValue().getG() + ", ";
 			output += "\"b\":" + pairs.getValue().getB() + " } ],\r\n";

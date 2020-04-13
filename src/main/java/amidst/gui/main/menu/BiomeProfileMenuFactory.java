@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
@@ -108,9 +109,13 @@ public class BiomeProfileMenuFactory {
 	private final JMenu parentMenu;
 	private final Actions actions;
 	private final BiomeProfileDirectory biomeProfileDirectory;
+	
 	private final String reloadText;
 	private final int reloadMnemonic;
 	private final MenuShortcut reloadMenuShortcut;
+	
+	private final String createExampleText;
+	private final int createExampleMnemonic;
 
 	public BiomeProfileMenuFactory(
 			JMenu parentMenu,
@@ -118,13 +123,17 @@ public class BiomeProfileMenuFactory {
 			BiomeProfileDirectory biomeProfileDirectory,
 			String reloadText,
 			int reloadMnemonic,
-			MenuShortcut reloadMenuShortcut) {
+			MenuShortcut reloadMenuShortcut,
+			String createExampleText,
+			int createExampleMnemonic) {
 		this.parentMenu = parentMenu;
 		this.actions = actions;
 		this.biomeProfileDirectory = biomeProfileDirectory;
 		this.reloadText = reloadText;
 		this.reloadMnemonic = reloadMnemonic;
 		this.reloadMenuShortcut = reloadMenuShortcut;
+		this.createExampleText = createExampleText;
+		this.createExampleMnemonic = createExampleMnemonic;
 		AmidstLogger.info("Checking for additional biome profiles.");
 		initParentMenu();
 	}
@@ -134,9 +143,11 @@ public class BiomeProfileMenuFactory {
 		BiomeProfileVisitorImpl visitor = new BiomeProfileVisitorImpl(parentMenu, actions);
 		visitor.visitProfile(BiomeProfile.getDefaultProfile());
 		parentMenu.addSeparator();
-		biomeProfileDirectory.visitProfiles(visitor);
-		parentMenu.addSeparator();
+		if (biomeProfileDirectory.visitProfiles(visitor)) {
+			parentMenu.addSeparator();
+		}
 		Menus.item(parentMenu, this::doReload, reloadText, reloadMnemonic, reloadMenuShortcut);
+		Menus.item(parentMenu, () -> actions.createExampleProfile(biomeProfileDirectory), createExampleText, createExampleMnemonic);
 		visitor.selectDefaultBiomeProfile();
 	}
 

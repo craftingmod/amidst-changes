@@ -94,6 +94,7 @@ public class Biome {
 	public static final int soulSandValley       = 170;
 	public static final int crimsonForest        = 171;
 	public static final int warpedForest         = 172;
+	public static final int basaltDeltas         = 173;
 	
 	// Pre beta 1.8 biomes didn't have IDs, so we detect them with their colors and assign them negative ids so they will never clash with new ids
 	public static final int rainforestOld        = -1;
