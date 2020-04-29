@@ -88,7 +88,7 @@ public class AmidstMenuBuilder {
 		Menus.item(result, actions::goToCoordinate,        "Go to Coordinate ...",     KeyEvent.VK_C, MenuShortcuts.GO_TO_COORDINATE);
 		Menus.item(result, actions::goToSpawn,             "Go to World Spawn",        KeyEvent.VK_S, MenuShortcuts.GO_TO_WORLD_SPAWN);
 		Menus.item(result, actions::goToStronghold,        "Go to Stronghold ...",     KeyEvent.VK_H, MenuShortcuts.GO_TO_STRONGHOLD);
-		Menus.item(result, actions::goToPlayer,            "Go to Player ...",             KeyEvent.VK_P, MenuShortcuts.GO_TO_PLAYER);
+		Menus.item(result, actions::goToPlayer,            "Go to Player ...",         KeyEvent.VK_P, MenuShortcuts.GO_TO_PLAYER);
 		result.addSeparator();
 		Menus.item(result, actions::zoomIn,                "Zoom In",                  KeyEvent.VK_I, MenuShortcuts.ZOOM_IN);
 		Menus.item(result, actions::zoomOut,               "Zoom Out",                 KeyEvent.VK_O, MenuShortcuts.ZOOM_OUT);
@@ -126,7 +126,7 @@ public class AmidstMenuBuilder {
 		Menus.checkbox(result, settings.smoothScrolling,      "Smooth Scrolling");
 		Menus.checkbox(result, settings.fragmentFading,       "Fragment Fading");
 		Menus.checkbox(result, settings.maxZoom,              "Restrict Maximum Zoom");
-		Menus.checkbox(result, settings.showFPS,              "Show Framerate");
+		Menus.checkbox(result, settings.showFPS,              "Show Framerate & CPU");
 		Menus.checkbox(result, settings.showScale,            "Show Scale");
 		Menus.checkbox(result, settings.showDebug,            "Show Debug Information");
 		// @formatter:on
@@ -162,7 +162,8 @@ public class AmidstMenuBuilder {
 	private JMenu create_Settings_BiomeProfile() {
 		JMenu result = new JMenu("Biome Profile");
 		// @formatter:off
-		new BiomeProfileMenuFactory(result, actions, biomeProfileDirectory, "Reload Biome Profiles", KeyEvent.VK_R, MenuShortcuts.RELOAD_BIOME_PROFILES);
+		new BiomeProfileMenuFactory(result, actions, biomeProfileDirectory, "Reload Biome Profiles", KeyEvent.VK_R, MenuShortcuts.RELOAD_BIOME_PROFILES,
+																			"Create Example Profile", KeyEvent.VK_C);
 		// @formatter:on
 		return result;
 	}

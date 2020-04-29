@@ -29,6 +29,7 @@ import amidst.gui.main.viewer.widget.Widget;
 import amidst.gui.main.viewer.widget.Widget.CornerAnchorPoint;
 import amidst.gui.main.viewer.widget.WidgetManager;
 import amidst.mojangapi.world.World;
+import amidst.mojangapi.world.WorldOptions;
 import amidst.mojangapi.world.export.WorldExporter;
 import amidst.mojangapi.world.export.WorldExporterConfiguration;
 import amidst.threading.WorkerExecutor;
@@ -49,15 +50,16 @@ public class PerViewerFacadeInjector {
 			AmidstSettings settings,
 			Supplier<String> progressText) {
 		// @formatter:off
-		BiomeWidget biomeWidget = new BiomeWidget(CornerAnchorPoint.NONE, biomeSelection, layerReloader, settings.biomeProfileSelection);
+		BiomeWidget biomeWidget = new BiomeWidget(CornerAnchorPoint.NONE, biomeSelection, layerReloader, settings.biomeProfileSelection, world.getBiomeList());
+		WorldOptions worldOptions = world.getWorldOptions();
 		return Arrays.asList(
 				new ChangeableTextWidget(   CornerAnchorPoint.CENTER,        progressText),
 				new FpsWidget(              CornerAnchorPoint.BOTTOM_LEFT,   new FramerateTimer(2),              settings.showFPS),
 				new ScaleWidget(            CornerAnchorPoint.BOTTOM_CENTER, zoom,                               settings.showScale),
-				new SeedAndWorldTypeWidget( CornerAnchorPoint.TOP_LEFT,      world.getWorldSeed(), world.getWorldType()),
+				new SeedAndWorldTypeWidget( CornerAnchorPoint.TOP_LEFT,      worldOptions.getWorldSeed(), worldOptions.getWorldType()),
 				new SelectedIconWidget(     CornerAnchorPoint.TOP_LEFT,      worldIconSelection),
 				new DebugWidget(            CornerAnchorPoint.BOTTOM_RIGHT,  graph,             fragmentManager, settings.showDebug, accelerationCounter),
-				new CursorInformationWidget(CornerAnchorPoint.TOP_RIGHT,     graph,             translator,      settings.dimension),
+				new CursorInformationWidget(CornerAnchorPoint.TOP_RIGHT,     graph,             translator,      settings.dimension, world.getBiomeList()),
 				new BiomeToggleWidget(      CornerAnchorPoint.BOTTOM_RIGHT,  biomeWidget, biomeSelection),
 				biomeWidget
 		);
@@ -66,6 +68,7 @@ public class PerViewerFacadeInjector {
 
 	private final WorkerExecutor workerExecutor;
 	private final World world;
+	private final BiomeSelection biomeSelection;
 	private final Graphics2DAccelerationCounter accelerationCounter;
 	private final Movement movement;
 	private final WorldIconSelection worldIconSelection;
@@ -89,11 +92,11 @@ public class PerViewerFacadeInjector {
 			Zoom zoom,
 			LayerBuilder layerBuilder,
 			FragmentManager fragmentManager,
-			BiomeSelection biomeSelection,
 			World world,
 			Actions actions) {
 		this.workerExecutor = workerExecutor;
 		this.world = world;
+		this.biomeSelection = new BiomeSelection(world.getBiomeList());
 		this.accelerationCounter = new Graphics2DAccelerationCounter();
 		this.movement = new Movement(settings.smoothScrolling);
 		this.worldIconSelection = new WorldIconSelection();

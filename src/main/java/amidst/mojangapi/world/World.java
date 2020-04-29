@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import amidst.documentation.ThreadSafe;
 import amidst.mojangapi.minecraftinterface.RecognisedVersion;
+import amidst.mojangapi.world.biome.BiomeList;
 import amidst.mojangapi.world.icon.WorldIcon;
 import amidst.mojangapi.world.icon.producer.CachedWorldIconProducer;
 import amidst.mojangapi.world.icon.producer.WorldIconProducer;
@@ -13,18 +14,16 @@ import amidst.mojangapi.world.oracle.EndIsland;
 import amidst.mojangapi.world.oracle.EndIslandOracle;
 import amidst.mojangapi.world.oracle.SlimeChunkOracle;
 import amidst.mojangapi.world.player.MovablePlayerList;
-import amidst.mojangapi.world.versionfeatures.VersionFeatures;
 
 @ThreadSafe
 public class World {
 	private final Consumer<World> onDisposeWorld;
 
-	private final WorldSeed worldSeed;
-	private final WorldType worldType;
-	private final String generatorOptions;
+	private final WorldOptions worldOptions;
 	private final MovablePlayerList movablePlayerList;
 	private final RecognisedVersion recognisedVersion;
-	private final VersionFeatures versionFeatures;
+	private final List<Integer> enabledLayers;
+	private final BiomeList biomeList;
 
 	private final BiomeDataOracle biomeDataOracle;
 	private final EndIslandOracle endIslandOracle;
@@ -43,12 +42,11 @@ public class World {
 
 	public World(
 			Consumer<World> onDisposeWorld,
-			WorldSeed worldSeed,
-			WorldType worldType,
-			String generatorOptions,
+			WorldOptions worldOptions,
 			MovablePlayerList movablePlayerList,
 			RecognisedVersion recognisedVersion,
-			VersionFeatures versionFeatures,
+			BiomeList biomeList,
+			List<Integer> enabledLayers,
 			BiomeDataOracle biomeDataOracle,
 			EndIslandOracle endIslandOracle,
 			SlimeChunkOracle slimeChunkOracle,
@@ -64,12 +62,11 @@ public class World {
 			WorldIconProducer<Void> netherFortressProducer,
 			WorldIconProducer<List<EndIsland>> endCityProducer) {
 		this.onDisposeWorld = onDisposeWorld;
-		this.worldSeed = worldSeed;
-		this.worldType = worldType;
-		this.generatorOptions = generatorOptions;
+		this.worldOptions = worldOptions;
 		this.movablePlayerList = movablePlayerList;
 		this.recognisedVersion = recognisedVersion;
-		this.versionFeatures = versionFeatures;
+		this.biomeList = biomeList;
+		this.enabledLayers = enabledLayers;
 		this.biomeDataOracle = biomeDataOracle;
 		this.endIslandOracle = endIslandOracle;
 		this.slimeChunkOracle = slimeChunkOracle;
@@ -86,16 +83,8 @@ public class World {
 		this.endCityProducer = endCityProducer;
 	}
 
-	public WorldSeed getWorldSeed() {
-		return worldSeed;
-	}
-
-	public WorldType getWorldType() {
-		return worldType;
-	}
-
-	public String getGeneratorOptions() {
-		return generatorOptions;
+	public WorldOptions getWorldOptions() {
+		return worldOptions;
 	}
 
 	public MovablePlayerList getMovablePlayerList() {
@@ -105,9 +94,13 @@ public class World {
 	public RecognisedVersion getRecognisedVersion() {
 		return recognisedVersion;
 	}
+	
+	public BiomeList getBiomeList() {
+		return biomeList;
+	}
 
-	public VersionFeatures getVersionFeatures() {
-		return versionFeatures;
+	public List<Integer> getEnabledLayers() {
+		return enabledLayers;
 	}
 
 	public BiomeDataOracle getBiomeDataOracle() {
@@ -161,7 +154,7 @@ public class World {
 	public WorldIconProducer<Void> getWoodlandMansionProducer() {
 		return woodlandMansionProducer;
 	}
-	
+
 	public WorldIconProducer<Void> getOceanFeaturesProducer() {
 		return oceanFeaturesProducer;
 	}

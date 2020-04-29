@@ -56,7 +56,6 @@ public enum DefaultClassTranslator {
 					&& c.getField(1).hasFlags(AccessFlags.PRIVATE | AccessFlags.FINAL)
 					&& c.getField(2).hasFlags(AccessFlags.PRIVATE)
 					&& c.hasMethodWithRealArgsReturning("long")
-					&& c.hasMethodWithNoArgs()
 					&& !c.getRealClassName().contains("$")
 					&& !c.searchForStringContaining("the elder scrolls")
 				)
@@ -121,7 +120,7 @@ public enum DefaultClassTranslator {
 			.next()
 				.ifDetect(c -> 
 					(c.searchForStringContaining("Server-Worker-")
-					| c.searchForStringContaining("Worker-"))
+					 || c.searchForStringContaining("Worker-"))
 					&& c.searchForStringContaining("os.name")
 					&& c.searchForLong(1000000L)
 				)

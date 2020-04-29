@@ -9,9 +9,9 @@ public enum SymbolicNames {
 	public static final String CLASS_REGISTRY = "Registry";
 	public static final String FIELD_REGISTRY_BIOME = "biomeRegistry";
 
+
 	public static final String CLASS_MAPPED_REGISTRY = "MappedRegistry";
 	public static final String METHOD_MAPPED_REGISTRY_GET_ID = "getId";
-
 	public static final String CLASS_UTIL = "Util";
 	public static final String FIELD_UTIL_SERVER_EXECUTOR = "SERVER_EXECUTOR";
 

@@ -20,7 +20,7 @@ public class VillageLocationChecker extends AllValidLocationChecker {
 			long seed, BiomeDataOracle biomeDataOracle, List<Biome> validBiomesForStructure, boolean doComplexVillageCheck) {
 		super(getLocationCheckers(seed, biomeDataOracle, validBiomesForStructure, doComplexVillageCheck));
 	}
-	
+
 	private static LocationChecker[] getLocationCheckers(
 			long seed, BiomeDataOracle biomeDataOracle, List<Biome> validBiomesForStructure, boolean doComplexVillageCheck) {
 		LocationChecker base = new StructureAlgorithm(
