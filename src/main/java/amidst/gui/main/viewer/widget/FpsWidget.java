@@ -17,14 +17,15 @@ public class FpsWidget extends TextWidget {
 	public FpsWidget(CornerAnchorPoint anchor, FramerateTimer fpsTimer, CpuUsageTimer usageTimer, Setting<Boolean> isVisibleSetting) {
 		super(anchor);
 		this.fpsTimer = fpsTimer;
-		this.isVisibleSetting = isVisibleSetting;
 		this.usageTimer = usageTimer;
+		this.isVisibleSetting = isVisibleSetting;
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
 	@Override
 	protected List<String> updateTextLines() {
 		fpsTimer.tick();
+		usageTimer.tick();
 		if (isVisibleSetting.get()) {
 			return Arrays.asList(
 					"CPU: " + String.format("%.1f", usageTimer.getCurrentUsage()) + "%",
