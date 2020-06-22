@@ -35,6 +35,7 @@ public class World {
 	private final WorldIconProducer<Void> woodlandMansionProducer;
 	private final WorldIconProducer<Void> oceanFeaturesProducer;
 	private final WorldIconProducer<Void> netherFortressProducer;
+	private final WorldIconProducer<Void> ruinedPortalProducer;
 	private final WorldIconProducer<List<EndIsland>> endCityProducer;
 
 	public World(
@@ -56,6 +57,7 @@ public class World {
 			WorldIconProducer<Void> woodlandMansionProducer,
 			WorldIconProducer<Void> oceanFeaturesProducer,
 			WorldIconProducer<Void> netherFortressProducer,
+			WorldIconProducer<Void> ruinedPortalProducer,
 			WorldIconProducer<List<EndIsland>> endCityProducer) {
 		this.worldOptions = worldOptions;
 		this.movablePlayerList = movablePlayerList;
@@ -75,6 +77,7 @@ public class World {
 		this.woodlandMansionProducer = woodlandMansionProducer;
 		this.oceanFeaturesProducer = oceanFeaturesProducer;
 		this.netherFortressProducer = netherFortressProducer;
+		this.ruinedPortalProducer = ruinedPortalProducer;
 		this.endCityProducer = endCityProducer;
 	}
 
@@ -140,6 +143,10 @@ public class World {
 
 	public WorldIconProducer<Void> getNetherFortressProducer() {
 		return netherFortressProducer;
+	}
+	
+	public WorldIconProducer<Void> getRuinedPortalProducer() {
+		return ruinedPortalProducer;
 	}
 
 	public WorldIconProducer<List<EndIsland>> getEndCityProducer() {

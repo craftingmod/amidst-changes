@@ -78,7 +78,7 @@ public class LayersMenu {
 		createOverworldLayers(dimension);
 		menu.addSeparator();
 		Menus.radio(   menu, dimensionSetting, group,     Dimension.END,                                            MenuShortcuts.DISPLAY_DIMENSION_END);
-		endLayer(      settings.showEndCities,            "End City Icons",         getIcon("end_city.png"),        MenuShortcuts.SHOW_END_CITIES, dimension, LayerIds.END_CITY);
+		endLayer(      settings.showEndCities,            "End City Icons",         getIcon("end_city.png"),        MenuShortcuts.SHOW_END_CITIES,        dimension, LayerIds.END_CITY);
 		// @formatter:on
 	}
 
@@ -95,6 +95,7 @@ public class LayersMenu {
 		overworldLayer(settings.showWoodlandMansions,     "Woodland Mansion Icons", getIcon("woodland_mansion.png"),MenuShortcuts.SHOW_WOODLAND_MANSIONS, dimension, LayerIds.WOODLAND_MANSION);
 		overworldLayer(settings.showOceanFeatures,        "Ocean Features Icons",   getIcon("shipwreck.png"),       MenuShortcuts.SHOW_OCEAN_FEATURES,    dimension, LayerIds.OCEAN_FEATURES);
 		overworldLayer(settings.showNetherFortresses,     "Nether Fortress Icons",  getIcon("nether_fortress.png"), MenuShortcuts.SHOW_NETHER_FORTRESSES, dimension, LayerIds.NETHER_FORTRESS);
+		overworldLayer(settings.showRuinedPortals,        "Ruined Portal Icons",    getIcon("ruined_portal.png"),   MenuShortcuts.SHOW_RUINED_PORTALS,    dimension, LayerIds.RUINED_PORTALS);
 		// @formatter:on
 	}
 

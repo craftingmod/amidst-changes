@@ -27,6 +27,7 @@ public class AmidstSettings {
 	public final Setting<Boolean> showWoodlandMansions;
 	public final Setting<Boolean> showOceanFeatures;
 	public final Setting<Boolean> showNetherFortresses;
+	public final Setting<Boolean> showRuinedPortals;
 	public final Setting<Boolean> showEndCities;
 
 	public final Setting<Boolean> smoothScrolling;
@@ -64,6 +65,7 @@ public class AmidstSettings {
 		showWoodlandMansions       = Setting.createBoolean(  preferences, "woodlandMansionIcons", true);
 		showOceanFeatures          = Setting.createBoolean(  preferences, "oceanFeaturesIcons",   true);
 		showNetherFortresses       = Setting.createBoolean(  preferences, "netherFortressIcons",  false);
+		showRuinedPortals          = Setting.createBoolean(  preferences, "ruinedPortalsIcons",   false);
 		showEndCities              = Setting.createBoolean(  preferences, "endCityIcons",         false);
 
 		smoothScrolling            = Setting.createBoolean(  preferences, "mapFlicking",          true);

@@ -98,6 +98,7 @@ public class LayerBuilder {
 		declare(settings, declarations, enabledLayers, LayerIds.WOODLAND_MANSION,Dimension.OVERWORLD, false, settings.showWoodlandMansions);
 		declare(settings, declarations, enabledLayers, LayerIds.OCEAN_FEATURES,  Dimension.OVERWORLD, false, settings.showOceanFeatures);
 		declare(settings, declarations, enabledLayers, LayerIds.NETHER_FORTRESS, Dimension.OVERWORLD, false, settings.showNetherFortresses);
+		declare(settings, declarations, enabledLayers, LayerIds.RUINED_PORTALS,  Dimension.OVERWORLD, false, settings.showRuinedPortals);
 		declare(settings, declarations, enabledLayers, LayerIds.END_CITY,        Dimension.END,       false, settings.showEndCities);
 		// @formatter:on
 		return Collections.unmodifiableList(Arrays.asList(declarations));
@@ -144,6 +145,7 @@ public class LayerBuilder {
 				new WorldIconLoader<>(declarations.get(LayerIds.WOODLAND_MANSION),world.getWoodlandMansionProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.OCEAN_FEATURES),  world.getOceanFeaturesProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.NETHER_FORTRESS), world.getNetherFortressProducer()),
+				new WorldIconLoader<>(declarations.get(LayerIds.RUINED_PORTALS),  world.getRuinedPortalProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.END_CITY),        world.getEndCityProducer(), Fragment::getEndIslands)
 		));
 		// @formatter:on
@@ -173,6 +175,7 @@ public class LayerBuilder {
 				new WorldIconDrawer(declarations.get(LayerIds.WOODLAND_MANSION),zoom, worldIconSelection),
 				new WorldIconDrawer(declarations.get(LayerIds.OCEAN_FEATURES),  zoom, worldIconSelection),
 				new WorldIconDrawer(declarations.get(LayerIds.NETHER_FORTRESS), zoom, worldIconSelection),
+				new WorldIconDrawer(declarations.get(LayerIds.RUINED_PORTALS),  zoom, worldIconSelection),
 				new WorldIconDrawer(declarations.get(LayerIds.END_CITY),        zoom, worldIconSelection)
 		));
 		// @formatter:on

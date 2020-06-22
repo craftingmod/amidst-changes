@@ -17,28 +17,15 @@ public enum SymbolicNames {
 	public static final String CLASS_UTIL = "Util";
 	public static final String FIELD_UTIL_SERVER_EXECUTOR = "SERVER_EXECUTOR";
 
-	// TODO: correctly manage world types; remove duplication with legacy SymbolicNames
-	public static final String CLASS_WORLD_TYPE = "WorldType";
-	public static final String FIELD_WORLD_TYPE_DEFAULT = "default";
-	public static final String FIELD_WORLD_TYPE_FLAT = "flat";
-	public static final String FIELD_WORLD_TYPE_LARGE_BIOMES = "largeBiomes";
-	public static final String FIELD_WORLD_TYPE_AMPLIFIED = "amplified";
-	public static final String FIELD_WORLD_TYPE_CUSTOMIZED = "customized";
-
-	public static final String CLASS_WORLD_DATA = "WorldData";
-	public static final String METHOD_WORLD_DATA_MAP_SEED = "mapSeed";
-	public static final String CONSTRUCTOR_WORLD_DATA = "<init>";
-
-	public static final String CLASS_WORLD_SETTINGS = "WorldSettings";
-	public static final String CONSTRUCTOR_WORLD_SETTINGS = "<init>";
-
-	public static final String CLASS_GAME_TYPE = "GameType";
-
 	public static final String CLASS_NOISE_BIOME_PROVIDER = "NoiseBiomeProvider";
 	public static final String METHOD_NOISE_BIOME_PROVIDER_GET_BIOME = "getBiome";
+	
+	public static final String CLASS_OVERWORLD_BIOME_PROVIDER = "OverworldBiomeProvider";
+	public static final String CONSTRUCTOR_OVERWORLD_BIOME_PROVIDER = "<init>";
+	
+	public static final String CLASS_MULTI_NOISE_BIOME_PROVIDER = "MultiNoiseBiomeProvider";
+	public static final String METHOD_MULTI_NOISE_BIOME_PROVIDER_PRESET_NETHER = "presetNether";
 
-	public static final String CLASS_BIOME_ZOOMER = "OverworldBiomeZoomer";
+	public static final String CLASS_BIOME_ZOOMER = "BiomeZoomer";
 	public static final String METHOD_BIOME_ZOOMER_GET_BIOME = "getBiome";
-
-    public static final String CLASS_BIOME = "Biome";
 }

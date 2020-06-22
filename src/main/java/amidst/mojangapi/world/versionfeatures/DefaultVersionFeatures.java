@@ -111,6 +111,8 @@ public enum DefaultVersionFeatures {
 					LayerIds.WOODLAND_MANSION
 				).sinceExtend(RecognisedVersion._18w09a,
 					LayerIds.OCEAN_FEATURES
+				).sinceExtend(RecognisedVersion._1_15_2, // XXX: Change to whatever version it really is
+					LayerIds.RUINED_PORTALS
 				).construct())
 
 			.with(FeatureKey.BIOME_LIST, DefaultBiomes.DEFAULT_BIOMES)
@@ -460,6 +462,26 @@ public enum DefaultVersionFeatures {
 						features.get(FeatureKey.BIOME_DATA_ORACLE),
 						features.get(VALID_BIOMES_AT_MIDDLE_OF_CHUNK_BURIED_TREASURE),
 						features.get(SEED_FOR_STRUCTURE_BURIED_TREASURE)
+					)
+				)))
+			.with(FeatureKey.RUINED_PORTAL_OVERWORLD_LOCATION_CHECKER, VersionFeature.bind(features ->
+				VersionFeature.constant(
+					ScatteredFeaturesLocationChecker.allBiomes(
+						getWorldSeed(features),
+						(byte) 40,
+						(byte) 15,
+						34222645L,
+						features.get(BUGGY_STRUCTURE_COORDINATE_MATH)
+					)
+				)))
+			.with(FeatureKey.RUINED_PORTAL_NETHER_LOCATION_CHECKER, VersionFeature.bind(features -> // XXX: Nether biome checks when implemented
+				VersionFeature.constant(
+					ScatteredFeaturesLocationChecker.allBiomes(
+						getWorldSeed(features),
+						(byte) 25,
+						(byte) 10,
+						34222645L,
+						features.get(BUGGY_STRUCTURE_COORDINATE_MATH)
 					)
 				)))
 			.with(VALID_BIOMES_AT_MIDDLE_OF_CHUNK_BURIED_TREASURE, VersionFeature.<Integer> listBuilder()

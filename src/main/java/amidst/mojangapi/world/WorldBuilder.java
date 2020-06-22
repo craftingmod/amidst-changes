@@ -198,6 +198,22 @@ public class WorldBuilder {
 						new ImmutableWorldIconTypeProvider(DefaultWorldIconTypes.NETHER_FORTRESS),
 						Dimension.NETHER,
 						false),
+				new MultiProducer<>(
+						new StructureProducer<>(
+								Resolution.CHUNK,
+								8,
+								versionFeatures.get(FeatureKey.RUINED_PORTAL_OVERWORLD_LOCATION_CHECKER),
+								new ImmutableWorldIconTypeProvider(DefaultWorldIconTypes.RUINED_PORTAL),
+								Dimension.OVERWORLD,
+								false),
+						new StructureProducer<>(
+								Resolution.NETHER_CHUNK,
+								64,
+								versionFeatures.get(FeatureKey.RUINED_PORTAL_NETHER_LOCATION_CHECKER),
+								new ImmutableWorldIconTypeProvider(DefaultWorldIconTypes.RUINED_PORTAL),
+								Dimension.NETHER,
+								false)
+				),
 				new StructureProducer<>(
 						Resolution.CHUNK,
 						8,

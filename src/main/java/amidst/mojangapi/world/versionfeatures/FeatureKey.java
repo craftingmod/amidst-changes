@@ -39,6 +39,8 @@ public class FeatureKey<T> {
 	public static final FeatureKey<LocationChecker>  OCEAN_RUINS_LOCATION_CHECKER      = make();
 	public static final FeatureKey<LocationChecker>  SHIPWRECK_LOCATION_CHECKER        = make();
 	public static final FeatureKey<LocationChecker>  BURIED_TREASURE_LOCATION_CHECKER  = make();
+	public static final FeatureKey<LocationChecker>  RUINED_PORTAL_OVERWORLD_LOCATION_CHECKER  = make();
+	public static final FeatureKey<LocationChecker>  RUINED_PORTAL_NETHER_LOCATION_CHECKER  = make();
 	// @formatter:on
 
 

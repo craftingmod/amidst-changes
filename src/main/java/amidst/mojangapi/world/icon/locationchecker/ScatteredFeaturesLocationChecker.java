@@ -47,4 +47,20 @@ public class ScatteredFeaturesLocationChecker extends AllValidLocationChecker {
 					buggyStructureCoordinateMath),
 				new BiomeLocationChecker(biomeDataOracle, validBiomesAtMiddleOfChunk));
 	}
+	
+	public static LocationChecker allBiomes(
+			long seed, byte maxDistanceBetweenFeatures,
+			byte minDistanceBetweenFeatures, long magicNumber,
+			boolean buggyStructureCoordinateMath) {
+		
+		return new StructureAlgorithm(
+				seed,
+				MAGIC_NUMBER_FOR_SEED_1,
+				MAGIC_NUMBER_FOR_SEED_2,
+				magicNumber,
+				maxDistanceBetweenFeatures,
+				minDistanceBetweenFeatures,
+				USE_TWO_VALUES_FOR_UPDATE,
+				buggyStructureCoordinateMath);
+	}
 }

@@ -33,7 +33,8 @@ public enum DefaultWorldIconTypes {
 	OCEAN_RUINS         ("ocean_ruins",       "Ocean Ruins"),
 	SHIPWRECK           ("shipwreck",         "Shipwreck"),
 	BURIED_TREASURE     ("buried_treasure",   "Buried Treasure"),
-	PILLAGER_OUTPOST    ("pillager_outpost",  "Pillager Outpost");
+	PILLAGER_OUTPOST    ("pillager_outpost",  "Pillager Outpost"),
+	RUINED_PORTAL       ("ruined_portal",     "Ruined Portal");
 	// @formatter:on
 
 	private static final Map<String, DefaultWorldIconTypes> typeMap = createTypeMap();
