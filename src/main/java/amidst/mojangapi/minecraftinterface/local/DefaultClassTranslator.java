@@ -63,6 +63,15 @@ public enum DefaultClassTranslator {
             	)
             	.thenDeclareRequired(CLASS_OVERWORLD_BIOME_PROVIDER)
             		.requiredConstructor(CONSTRUCTOR_OVERWORLD_BIOME_PROVIDER).real("long").real("boolean").real("boolean").end()
+			.next()
+				.ifDetect(c -> !c.getRealClassName().contains("$")
+					&& c.searchForUtf8EqualTo("biome")
+					&& c.searchForUtf8EqualTo("getSecond")
+					&& c.getNumberOfMethods() >= 19
+					&& c.hasMethodWithRealArgsReturning("int", "int", "int", null)
+				)
+				.thenDeclareRequired(CLASS_MULTI_NOISE_BIOME_PROVIDER)
+					.requiredMethod(METHOD_MULTI_NOISE_BIOME_PROVIDER_PRESET_NETHER, "d").real("long").end()
             .next()
 				.ifDetect(c -> 
 					(c.searchForStringContaining("Server-Worker-")

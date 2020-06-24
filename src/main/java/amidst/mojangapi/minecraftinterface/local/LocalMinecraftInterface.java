@@ -31,6 +31,7 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 	private final SymbolicClass registryClass;
 	private final SymbolicClass registryKeyClass;
 	private final SymbolicClass overworldBiomeProviderClass;
+	private final SymbolicClass multiNoiseBiomeProviderClass;
 	private final SymbolicClass noiseBiomeProviderClass;
 	private final SymbolicClass biomeZoomerClass;
 	private final SymbolicClass utilClass;
@@ -51,6 +52,7 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 		this.registryClass = symbolicClassMap.get(SymbolicNames.CLASS_REGISTRY);
         this.registryKeyClass = symbolicClassMap.get(SymbolicNames.CLASS_REGISTRY_KEY);
         this.overworldBiomeProviderClass = symbolicClassMap.get(SymbolicNames.CLASS_OVERWORLD_BIOME_PROVIDER);
+        this.multiNoiseBiomeProviderClass = symbolicClassMap.get(SymbolicNames.CLASS_MULTI_NOISE_BIOME_PROVIDER);
         this.noiseBiomeProviderClass = symbolicClassMap.get(SymbolicNames.CLASS_NOISE_BIOME_PROVIDER);
         this.biomeZoomerClass = symbolicClassMap.get(SymbolicNames.CLASS_BIOME_ZOOMER);
         this.utilClass = symbolicClassMap.get(SymbolicNames.CLASS_UTIL);
@@ -80,6 +82,13 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 		   			false,
 		   			worldType.equals(WorldType.LARGE_BIOMES)
 	   			).getObject();
+	}
+	
+	@SuppressWarnings("unused")
+	private Object createNetherBiomeProviderObject(long seed)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		
+		return multiNoiseBiomeProviderClass.getMethod(SymbolicNames.METHOD_MULTI_NOISE_BIOME_PROVIDER_PRESET_NETHER).getRawMethod().invoke(null, seed); 
 	}
 
 	private synchronized void initializeIfNeeded() throws MinecraftInterfaceException {
