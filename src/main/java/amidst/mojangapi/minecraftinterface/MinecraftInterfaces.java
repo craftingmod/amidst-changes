@@ -61,7 +61,7 @@ public enum MinecraftInterfaces {
         } else if(RecognisedVersion.isOlderOrEqualTo(version, _1_15MinecraftInterface.LAST_COMPATIBLE_VERSION)) {
         	return new Factory(_1_15ClassTranslator.get(), _1_15MinecraftInterface::new);
         } else {
-            return new Factory(DefaultClassTranslator.get(), LocalMinecraftInterface::new);
+        	return new Factory(DefaultClassTranslator.get(), LocalMinecraftInterface::new);
         }
     }
 

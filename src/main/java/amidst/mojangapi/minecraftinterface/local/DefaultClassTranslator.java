@@ -6,26 +6,28 @@ import amidst.clazz.real.AccessFlags;
 import amidst.clazz.translator.ClassTranslator;
 
 public enum DefaultClassTranslator {
-	INSTANCE;
+    INSTANCE;
 
-	private final ClassTranslator classTranslator = createClassTranslator();
+    private final ClassTranslator classTranslator = createClassTranslator();
 
-	public static ClassTranslator get() {
-		return INSTANCE.classTranslator;
-	}
+    public static ClassTranslator get() {
+        return INSTANCE.classTranslator;
+    }
 
-	// @formatter:off
-	private ClassTranslator createClassTranslator() {
-	    return ClassTranslator
+    // @formatter:off
+    private ClassTranslator createClassTranslator() {
+        return ClassTranslator
             .builder()
-                .ifDetect(c -> c.getNumberOfConstructors() == 3
-                        && c.getNumberOfFields() == 4
-                        && c.getField(1).hasFlags(AccessFlags.PRIVATE | AccessFlags.STATIC | AccessFlags.FINAL)
+                .ifDetect(c ->
+                        (c.getNumberOfConstructors() == 3
+                        && c.getNumberOfFields() == 3
+                        && c.getField(0).hasFlags(AccessFlags.PRIVATE | AccessFlags.STATIC | AccessFlags.FINAL)
                         && c.searchForUtf8EqualTo("argument.id.invalid")
-                        && c.searchForUtf8EqualTo("minecraft")
+                        && c.searchForUtf8EqualTo("minecraft")) // before 20w21a
+                        || c.searchForUtf8EqualTo("ResourceKey[") // from 20w21a
                 )
-                .thenDeclareOptional(CLASS_REGISTRY_KEY)
-                    .requiredConstructor(CONSTRUCTOR_REGISTRY_KEY).real("java.lang.String").end()
+                .thenDeclareRequired(CLASS_RESOURCE_KEY)
+                    .optionalConstructor(CONSTRUCTOR_RESOURCE_KEY).real("java.lang.String").end() // before 20w21a
             .next()
                 .ifDetect(c -> c.getNumberOfConstructors() <= 1
                     && c.getNumberOfFields() > 15
@@ -34,10 +36,21 @@ public enum DefaultClassTranslator {
                     && c.searchForUtf8EqualTo("biome")
                     && c.searchForUtf8EqualTo("item")
                 )
-                .thenDeclareOptional(CLASS_REGISTRY)
-                    .requiredField(FIELD_REGISTRY_META_REGISTRY, "g")
+                .thenDeclareRequired(CLASS_REGISTRY)
+                    .requiredField(FIELD_REGISTRY_META_REGISTRY, "f")
+                    .requiredField(FIELD_REGISTRY_META_REGISTRY2, "i")
+                    .requiredField(FIELD_REGISTRY_META_REGISTRY3, "h")
+                	.optionalMethod(METHOD_REGISTRY_CREATE_KEY, "a").real("java.lang.String").end()
                     .requiredMethod(METHOD_REGISTRY_GET_ID, "a").real("java.lang.Object").end()
-                    .requiredMethod(METHOD_REGISTRY_GET_BY_KEY, "a").symbolic(CLASS_REGISTRY_KEY).end()
+                    .requiredMethod(METHOD_REGISTRY_GET_BY_KEY, "a").symbolic(CLASS_RESOURCE_KEY).end()
+            .next()
+                .ifDetect(c -> c.searchForUtf8EqualTo("level-seed")
+                	&& c.searchForUtf8EqualTo("generator-settings")
+                )
+                .thenDeclareRequired(CLASS_WORLD_GEN_SETTINGS)
+                	.requiredMethod(METHOD_WORLD_GEN_SETTINGS_CREATE, "a").real("java.util.Properties").end()
+                	.requiredMethod(METHOD_WORLD_GEN_SETTINGS_OVERWORLD, "g").end()
+                	.requiredMethod(METHOD_WORLD_GEN_SETTINGS_OVERWORLD2, "f").end()
             .next()
                 .ifDetect(c -> c.getRealClassName().contains("$")
                     && c.isInterface()
@@ -51,36 +64,27 @@ public enum DefaultClassTranslator {
                 .ifDetect(c -> !c.getRealClassName().contains("$")
                     && c.getRealSuperClassName().equals("java/lang/Enum")
                     && c.hasMethodWithRealArgsReturning("long", "int", "int", "int", null, null)
-                    && c.getNumberOfMethods() == 7
+                    && c.getNumberOfMethods() == 4
                 )
-                .thenDeclareRequired(CLASS_BIOME_ZOOMER)
+                .thenDeclareRequired(CLASS_OVERWORLD_BIOME_ZOOMER)
                     .requiredMethod(METHOD_BIOME_ZOOMER_GET_BIOME, "a").real("long").real("int").real("int").real("int").symbolic(CLASS_NOISE_BIOME_PROVIDER).end()
             .next()
-            	.ifDetect(c -> c.searchForUtf8EqualTo("legacy_biome_init_layer")
-	            	&& c.searchForUtf8EqualTo("large_biomes")
-	            	&& c.searchForUtf8EqualTo("seed")
-	            	&& c.hasMethodWithRealArgsReturning("int", "int", "int", null)
-            	)
-            	.thenDeclareRequired(CLASS_OVERWORLD_BIOME_PROVIDER)
-            		.requiredConstructor(CONSTRUCTOR_OVERWORLD_BIOME_PROVIDER).real("long").real("boolean").real("boolean").end()
-			.next()
-				.ifDetect(c -> !c.getRealClassName().contains("$")
-					&& c.searchForUtf8EqualTo("biome")
-					&& c.searchForUtf8EqualTo("getSecond")
-					&& c.getNumberOfMethods() >= 19
-					&& c.hasMethodWithRealArgsReturning("int", "int", "int", null)
-				)
-				.thenDeclareRequired(CLASS_MULTI_NOISE_BIOME_PROVIDER)
-					.requiredMethod(METHOD_MULTI_NOISE_BIOME_PROVIDER_PRESET_NETHER, "d").real("long").end()
+                .ifDetect(c ->
+                    (c.getNumberOfConstructors() == 1 || c.getNumberOfConstructors() == 2)
+                    && c.getNumberOfFields() > 0
+                    && c.getField(0).hasFlags(AccessFlags.STATIC | AccessFlags.FINAL)
+                    && (c.searchForFloat(0.62222224F) || c.searchForUtf8EqualTo("Feature placement"))
+                )
+                .thenDeclareRequired(CLASS_BIOME)
             .next()
-				.ifDetect(c -> 
-					(c.searchForStringContaining("Server-Worker-")
-					 || c.searchForStringContaining("Worker-"))
-					&& c.searchForStringContaining("os.name")
-					&& c.searchForLong(1000000L)
-				)
-				.thenDeclareOptional(CLASS_UTIL)
+                .ifDetect(c ->
+                    (c.searchForStringContaining("Server-Worker-")
+                     || c.searchForStringContaining("Worker-"))
+                    && c.searchForStringContaining("os.name")
+                    && c.searchForLong(1000000L)
+                )
+                .thenDeclareOptional(CLASS_UTIL)
             .construct();
-	}
-	// @formatter:on
+    }
+    // @formatter:on
 }

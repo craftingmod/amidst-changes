@@ -17,6 +17,7 @@ import amidst.parsing.URIUtils;
 public enum RealClasses {
 	;
 
+	private static final int MAXIMUM_CLASS_BYTES = 32 * 1024;
 	private static final RealClassBuilder REAL_CLASS_BUILDER = new RealClassBuilder();
 
 	public static List<RealClass> fromJarFile(Path jarFile) throws FileNotFoundException, JarFileParsingException {
@@ -65,10 +66,14 @@ public enum RealClasses {
 			throws IOException,
 			RealClassCreationException {
 		try (BufferedInputStream theStream = stream) {
-			byte[] classData = new byte[theStream.available()];
-			theStream.read(classData);
-			return REAL_CLASS_BUILDER.construct(realClassName, classData);
+			// TODO: Double check that this filter won't mess anything up.
+			if (theStream.available() < MAXIMUM_CLASS_BYTES) {
+				byte[] classData = new byte[theStream.available()];
+				theStream.read(classData);
+				return REAL_CLASS_BUILDER.construct(realClassName, classData);
+			}
 		}
+		return null;
 	}
 
 	private static String getFileNameWithoutExtension(String fileName, String extension) {

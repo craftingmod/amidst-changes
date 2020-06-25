@@ -6,6 +6,7 @@ import amidst.clazz.real.AccessFlags;
 import amidst.clazz.translator.ClassTranslator;
 
 public enum _1_15ClassTranslator {
+<<<<<<< HEAD
 	INSTANCE;
 
 	private final ClassTranslator classTranslator = createClassTranslator();
@@ -17,6 +18,19 @@ public enum _1_15ClassTranslator {
 	// @formatter:off
 	private ClassTranslator createClassTranslator() {
 	    return ClassTranslator
+=======
+    INSTANCE;
+
+    private final ClassTranslator classTranslator = createClassTranslator();
+
+    public static ClassTranslator get() {
+        return INSTANCE.classTranslator;
+    }
+
+    // @formatter:off
+    private ClassTranslator createClassTranslator() {
+        return ClassTranslator
+>>>>>>> master
             .builder()
                 .ifDetect(c ->
                         c.getNumberOfConstructors() == 3
@@ -55,13 +69,20 @@ public enum _1_15ClassTranslator {
                 .thenDeclareRequired(CLASS_GAME_TYPE)
             .next()
                 .ifDetect(c -> !c.getRealClassName().contains("$")
+<<<<<<< HEAD
                     && c.isFinal()
                     && c.getNumberOfConstructors() == 2
+=======
+                    && c.getRealSuperClassName().equals("java/lang/Object")
+                    && c.isFinal()
+                    && c.getNumberOfConstructors() <= 2
+>>>>>>> master
                     && c.getNumberOfFields() >= 5
                     && c.getNumberOfFields() <= 10
                     && c.getField(1).hasFlags(AccessFlags.PRIVATE | AccessFlags.FINAL)
                 )
                 .thenDeclareRequired(CLASS_WORLD_SETTINGS)
+<<<<<<< HEAD
                     .requiredConstructor(CONSTRUCTOR_WORLD_SETTINGS).real("long").symbolic(CLASS_GAME_TYPE).real("boolean").real("boolean").symbolic(CLASS_WORLD_TYPE).end()
             .next()
                 .ifDetect(c -> c.getNumberOfFields() > 40
@@ -70,6 +91,17 @@ public enum _1_15ClassTranslator {
                 .thenDeclareRequired(CLASS_WORLD_DATA)
                     .requiredConstructor(CONSTRUCTOR_WORLD_DATA).symbolic(CLASS_WORLD_SETTINGS).real("java.lang.String").end()
                     .requiredMethod(METHOD_WORLD_DATA_MAP_SEED, "c").real("long").end()
+=======
+                    .optionalConstructor(CONSTRUCTOR_WORLD_SETTINGS).real("long").symbolic(CLASS_GAME_TYPE).real("boolean").real("boolean").symbolic(CLASS_WORLD_TYPE).end()
+            .next()
+                .ifDetect(c -> c.getNumberOfFields() > 30
+                    && c.searchForUtf8EqualTo("SizeOnDisk")
+                    && c.searchForUtf8EqualTo("DifficultyLocked")
+                )
+                .thenDeclareRequired(CLASS_WORLD_DATA)
+                    .optionalConstructor(CONSTRUCTOR_WORLD_DATA).symbolic(CLASS_WORLD_SETTINGS).real("java.lang.String").end()
+                    .optionalConstructor(CONSTRUCTOR_WORLD_DATA2).symbolic(CLASS_WORLD_SETTINGS).end() // after 20w17a
+>>>>>>> master
             .next()
                 .ifDetect(c -> c.getRealClassName().contains("$")
                     && c.isInterface()
@@ -85,7 +117,11 @@ public enum _1_15ClassTranslator {
                     && c.hasMethodWithRealArgsReturning("long", "int", "int", "int", null, null)
                     && c.getNumberOfMethods() == 4
                 )
+<<<<<<< HEAD
                 .thenDeclareRequired(CLASS_BIOME_ZOOMER)
+=======
+                .thenDeclareRequired(CLASS_OVERWORLD_BIOME_ZOOMER)
+>>>>>>> master
                     .requiredMethod(METHOD_BIOME_ZOOMER_GET_BIOME, "a").real("long").real("int").real("int").real("int").symbolic(CLASS_NOISE_BIOME_PROVIDER).end()
             .next()
                 .ifDetect(c ->
@@ -96,6 +132,7 @@ public enum _1_15ClassTranslator {
                 )
                 .thenDeclareRequired(CLASS_BIOME)
             .next()
+<<<<<<< HEAD
 				.ifDetect(c -> 
 					(c.searchForStringContaining("Server-Worker-")
 					 || c.searchForStringContaining("Worker-"))
@@ -107,4 +144,16 @@ public enum _1_15ClassTranslator {
             .construct();
 	}
 	// @formatter:on
+=======
+                .ifDetect(c ->
+                    (c.searchForStringContaining("Server-Worker-")
+                     || c.searchForStringContaining("Worker-"))
+                    && c.searchForStringContaining("os.name")
+                    && c.searchForLong(1000000L)
+                )
+                .thenDeclareOptional(CLASS_UTIL)
+            .construct();
+    }
+    // @formatter:on
+>>>>>>> master
 }
