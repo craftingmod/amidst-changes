@@ -14,6 +14,7 @@ import javax.swing.UIManager;
 
 import net.miginfocom.swing.MigLayout;
 
+import amidst.Amidst;
 import amidst.AmidstMetaData;
 import amidst.AmidstSettings;
 import amidst.Application;
@@ -190,6 +191,6 @@ public class ProfileSelectWindow {
 	@CalledOnlyBy(AmidstThread.EDT)
 	public void dispose() {
 		isDisposed = true;
-		frame.dispose();
+		Amidst.destroyComponentTree(frame);
 	}
 }
