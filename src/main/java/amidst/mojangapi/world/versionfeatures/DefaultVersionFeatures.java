@@ -27,13 +27,16 @@ import amidst.mojangapi.world.icon.locationchecker.ScatteredFeaturesLocationChec
 import amidst.mojangapi.world.icon.locationchecker.VillageLocationChecker;
 import amidst.mojangapi.world.icon.locationchecker.WoodlandMansionLocationChecker;
 import amidst.mojangapi.world.icon.producer.CachedWorldIconProducer;
+import amidst.mojangapi.world.icon.producer.EndGatewayProducer;
 import amidst.mojangapi.world.icon.producer.StrongholdProducer_128Algorithm;
 import amidst.mojangapi.world.icon.producer.StrongholdProducer_Buggy128Algorithm;
 import amidst.mojangapi.world.icon.producer.StrongholdProducer_Original;
+import amidst.mojangapi.world.icon.producer.WorldIconProducer;
 import amidst.mojangapi.world.oracle.BiomeDataOracle;
-import amidst.mojangapi.world.oracle.EndIslandOracle;
 import amidst.mojangapi.world.oracle.HeuristicWorldSpawnOracle;
 import amidst.mojangapi.world.oracle.SlimeChunkOracle;
+import amidst.mojangapi.world.oracle.end.EndIslandList;
+import amidst.mojangapi.world.oracle.end.EndIslandOracle;
 
 public enum DefaultVersionFeatures {
 	;
@@ -113,13 +116,14 @@ public enum DefaultVersionFeatures {
 				).sinceExtend(RecognisedVersion._16w43a,
 					LayerIds.WOODLAND_MANSION
 				).sinceExtend(RecognisedVersion._18w09a,
-					LayerIds.OCEAN_FEATURES
+					LayerIds.OCEAN_FEATURES,
+					LayerIds.END_GATEWAY // were introduced in 16w39a, but we can only find them past here
 				).construct())
 
 			.with(FeatureKey.BIOME_LIST, DefaultBiomes.DEFAULT_BIOMES)
-			.with(FeatureKey.END_ISLAND_ORACLE, VersionFeature.bind(features ->
-				VersionFeature.constant(EndIslandOracle.from(getWorldSeed(features)))
-			))
+			.with(FeatureKey.END_ISLAND_ORACLE, (recognisedVersion, features) ->
+				EndIslandOracle.from(getWorldSeed(features), recognisedVersion)
+			)
 
 			.with(FeatureKey.SLIME_CHUNK_ORACLE, VersionFeature.bind(features ->
 				VersionFeature.constant(new SlimeChunkOracle(getWorldSeed(features)))
@@ -171,8 +175,18 @@ public enum DefaultVersionFeatures {
 			)
 			.with(MIN_DISTANCE_SCATTERED_FEATURES_NETHER_FORTRESS, VersionFeature.constant((byte) 4))
 
-			.with(FeatureKey.END_ISLAND_LOCATION_CHECKER, VersionFeature.bind(features ->
+			.with(FeatureKey.END_CITY_LOCATION_CHECKER, VersionFeature.bind(features ->
 				VersionFeature.constant(new EndCityLocationChecker(getWorldSeed(features)))
+			))
+			
+			.with(FeatureKey.END_GATEWAY_PRODUCER, VersionFeature.bind(features ->
+				VersionFeature.<WorldIconProducer<EndIslandList>> builder()
+					.init(
+						new EndGatewayProducer(getWorldSeed(features), 0, 3, features.get(FeatureKey.END_ISLAND_ORACLE))
+					).since(RecognisedVersion._20w06a, // TODO: confirm this version is correct; this changed after 1.15.2 and before 1.16
+						new EndGatewayProducer(getWorldSeed(features), 13, 4, features.get(FeatureKey.END_ISLAND_ORACLE))
+					)
+					.construct()
 			))
 
 			.with(FeatureKey.MINESHAFT_LOCATION_CHECKER, VersionFeature.bind(features ->
