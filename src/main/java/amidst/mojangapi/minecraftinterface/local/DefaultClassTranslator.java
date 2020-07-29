@@ -2,7 +2,6 @@ package amidst.mojangapi.minecraftinterface.local;
 
 import static amidst.mojangapi.minecraftinterface.local.SymbolicNames.*;
 
-import amidst.clazz.real.AccessFlags;
 import amidst.clazz.translator.ClassTranslator;
 
 public enum DefaultClassTranslator {
@@ -17,74 +16,100 @@ public enum DefaultClassTranslator {
     // @formatter:off
     private ClassTranslator createClassTranslator() {
         return ClassTranslator
-            .builder()
-                .ifDetect(c ->
-                        (c.getNumberOfConstructors() == 3
-                        && c.getNumberOfFields() == 3
-                        && c.getField(0).hasFlags(AccessFlags.PRIVATE | AccessFlags.STATIC | AccessFlags.FINAL)
-                        && c.searchForUtf8EqualTo("argument.id.invalid")
-                        && c.searchForUtf8EqualTo("minecraft")) // before 20w21a
-                        || c.searchForUtf8EqualTo("ResourceKey[") // from 20w21a
-                )
-                .thenDeclareRequired(CLASS_RESOURCE_KEY)
-                    .optionalConstructor(CONSTRUCTOR_RESOURCE_KEY).real("java.lang.String").end() // before 20w21a
-            .next()
-                .ifDetect(c -> c.getNumberOfConstructors() <= 1
-                    && c.getNumberOfFields() > 15
-                    && c.searchForUtf8EqualTo("block")
-                    && c.searchForUtf8EqualTo("potion")
-                    && c.searchForUtf8EqualTo("biome")
-                    && c.searchForUtf8EqualTo("item")
-                )
-                .thenDeclareRequired(CLASS_REGISTRY)
-                    .requiredField(FIELD_REGISTRY_META_REGISTRY, "f")
-                    .requiredField(FIELD_REGISTRY_META_REGISTRY2, "i")
-                    .requiredField(FIELD_REGISTRY_META_REGISTRY3, "h")
-                	.optionalMethod(METHOD_REGISTRY_CREATE_KEY, "a").real("java.lang.String").end()
-                    .requiredMethod(METHOD_REGISTRY_GET_ID, "a").real("java.lang.Object").end()
-                    .requiredMethod(METHOD_REGISTRY_GET_BY_KEY, "a").symbolic(CLASS_RESOURCE_KEY).end()
-            .next()
-                .ifDetect(c -> c.searchForUtf8EqualTo("level-seed")
-                	&& c.searchForUtf8EqualTo("generator-settings")
-                )
-                .thenDeclareRequired(CLASS_WORLD_GEN_SETTINGS)
-                	.requiredMethod(METHOD_WORLD_GEN_SETTINGS_CREATE, "a").real("java.util.Properties").end()
-                	.requiredMethod(METHOD_WORLD_GEN_SETTINGS_OVERWORLD, "g").end()
-                	.requiredMethod(METHOD_WORLD_GEN_SETTINGS_OVERWORLD2, "f").end()
-            .next()
-                .ifDetect(c -> c.getRealClassName().contains("$")
-                    && c.isInterface()
-                    && c.getNumberOfMethods() == 1
-                    && c.hasMethodWithRealArgsReturning("int", "int", "int", null)
-                    && !c.hasMethodWithRealArgsReturning("int", "int", "int", "boolean")
-                )
-                .thenDeclareRequired(CLASS_NOISE_BIOME_PROVIDER)
-                    .requiredMethod(METHOD_NOISE_BIOME_PROVIDER_GET_BIOME, "b").real("int").real("int").real("int").end()
-            .next()
-                .ifDetect(c -> !c.getRealClassName().contains("$")
-                    && c.getRealSuperClassName().equals("java/lang/Enum")
-                    && c.hasMethodWithRealArgsReturning("long", "int", "int", "int", null, null)
-                    && c.getNumberOfMethods() == 4
-                )
-                .thenDeclareRequired(CLASS_OVERWORLD_BIOME_ZOOMER)
-                    .requiredMethod(METHOD_BIOME_ZOOMER_GET_BIOME, "a").real("long").real("int").real("int").real("int").symbolic(CLASS_NOISE_BIOME_PROVIDER).end()
-            .next()
-                .ifDetect(c ->
-                    (c.getNumberOfConstructors() == 1 || c.getNumberOfConstructors() == 2)
-                    && c.getNumberOfFields() > 0
-                    && c.getField(0).hasFlags(AccessFlags.STATIC | AccessFlags.FINAL)
-                    && (c.searchForFloat(0.62222224F) || c.searchForUtf8EqualTo("Feature placement"))
-                )
-                .thenDeclareRequired(CLASS_BIOME)
-            .next()
-                .ifDetect(c ->
-                    (c.searchForStringContaining("Server-Worker-")
-                     || c.searchForStringContaining("Worker-"))
-                    && c.searchForStringContaining("os.name")
-                    && c.searchForLong(1000000L)
-                )
-                .thenDeclareOptional(CLASS_UTIL)
-            .construct();
+		            .builder()                
+						.ifDetect(c -> c.getNumberOfConstructors() <= 1
+						    && c.getNumberOfFields() > 15
+						    && c.searchForUtf8EqualTo("block")
+						    && c.searchForUtf8EqualTo("potion")
+						    && c.searchForUtf8EqualTo("biome")
+						    && c.searchForUtf8EqualTo("item")
+						)
+						.thenDeclareRequired(CLASS_REGISTRY)
+					.next()
+					    .ifDetect(c ->
+					        (c.searchForStringContaining("Server-Worker-")
+					         || c.searchForStringContaining("Worker-"))
+					        && c.searchForStringContaining("os.name")
+					        && c.searchForLong(1000000L)
+					    )
+					    .thenDeclareOptional(CLASS_UTIL)
+					.next()
+						.ifDetect(c ->
+							c.searchForLong(2003L)
+							&& c.searchForLong(70L)
+							&& c.searchForLong(50L)
+						)
+						.thenDeclareRequired(CLASS_BIOME_LAYERS)
+							.requiredMethod(METHOD_BIOME_LAYERS_BUILD, "a").real("boolean").real("int").real("int").real("java.util.function.LongFunction").end()
+//					.next()
+//						.ifDetect(c ->
+//							c.searchForUtf8EqualTo("Unknown biome id: ")
+//						)
+//						.thenDeclareRequired(CLASS_BIOME_LAYER_SAMPLER)
+//							.requiredField(FIELD_BIOME_LAYER_SAMPLER_SAMPLER, "b")
+//					.next()
+//						.ifDetect(c ->
+//							c.getRealSuperClassName().equals("java/lang/Object")
+//							&& c.getNumberOfConstructors() == 1
+//							&& c.getNumberOfFields() == 3
+//							&& c.getField(0).hasFlags(AccessFlags.PRIVATE | AccessFlags.FINAL)
+//							&& c.getField(1).hasFlags(AccessFlags.PRIVATE | AccessFlags.FINAL)
+//							&& c.getField(2).hasFlags(AccessFlags.PRIVATE | AccessFlags.FINAL)
+//							&& c.hasMethodWithRealArgsReturning("int", "int", "int")
+//							&& c.hasMethodWithRealArgsReturning("int")
+//							&& c.isFinal()
+//						)
+//						.thenDeclareRequired(CLASS_CACHING_LAYER_SAMPLER)
+//							.requiredField(FIELD_CACHING_LAYER_SAMPLER_LAYER_OPERATOR, "a")
+					.next()
+						.ifDetect(c ->
+							c.isInterface()
+							&& c.hasMethodWithRealArgsReturning("int", "int", "int")
+							&& c.getNumberOfMethods() == 1
+							&& c.getNumberOfConstructors() == 0
+							&& c.getNumberOfFields() == 0
+							&& c.searchForUtf8EqualTo("apply")
+						)
+						.thenDeclareRequired(CLASS_LAYER_OPERATOR)
+							.requiredMethod(METHOD_LAYER_OPERATOR_APPLY, "apply").real("int").real("int").end()
+					.next()
+						.ifDetect(c ->
+							c.isInterface()
+							&& c.hasMethodWithRealArgsReturning("int", "int", "int")
+							&& c.getNumberOfMethods() == 1
+							&& c.getNumberOfConstructors() == 0
+							&& c.getNumberOfFields() == 0
+							&& !c.searchForUtf8EqualTo("apply")
+						)
+						.thenDeclareRequired(CLASS_LAYER_SAMPLER)
+							.requiredMethod(METHOD_LAYER_SAMPLER_SAMPLE, "a").real("int").real("int").end()
+					.next()
+						.ifDetect(c ->
+							c.isInterface()
+							&& c.hasMethodWithRealArgsReturning(new String[] { null })
+							&& c.getNumberOfMethods() == 1
+							&& c.getNumberOfConstructors() == 0
+							&& c.getNumberOfFields() == 0
+							&& c.searchForUtf8EqualTo("make")
+						)
+						.thenDeclareRequired(CLASS_LAYER_FACTORY)
+							.requiredMethod(METHOD_LAYER_FACTORY_MAKE, "make").end()
+					.next()
+						.ifDetect(c ->
+							c.isInterface()
+							&& !c.getRealSuperClassName().equals("java.lang.Object") // TODO: check this
+							&& c.hasMethodWithRealArgsReturning("long", "long", null)
+							&& c.hasMethodWithRealArgsReturning("int", "int", "int")
+							&& c.hasMethodWithRealArgsReturning("int", "int", "int", "int", "int")
+						)
+						.thenDeclareRequired(CLASS_LAYER_SAMPLE_CONTEXT)
+					.next()
+						.ifDetect(c ->
+							c.hasMethodWithRealArgsReturning("int", "int", "int", "double", "double", "double", "double", "double", "double", "double")
+						)
+						.thenDeclareRequired(CLASS_PERLIN_NOISE_SAMPLER)
+							.requiredConstructor(CONSTRUCTOR_PERLIN_NOISE_SAMPLER).real("java.util.Random").end()
+					.construct();
     }
     // @formatter:on
 }
