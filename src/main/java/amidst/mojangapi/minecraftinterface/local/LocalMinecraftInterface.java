@@ -362,49 +362,72 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 		    }
 		}
 		
-		private int getFullResBiome(long seed, int x, int z) throws Throwable {
-			int i = x - 2;
-			int j = -2;
-			int k = z - 2;
-			int l = i >> 2;
-			int m = j >> 2;
-			int n = k >> 2;
-			double d = (double) (i & 3) / 4.0D;
-			double e = (double) (j & 3) / 4.0D;
-			double f = (double) (k & 3) / 4.0D;
-			double[] ds = new double[8];
-			
-			int t;
-			int aa;
-			int ab;
-			for (t = 0; t < 8; ++t) {
-				boolean bl = (t & 4) == 0;
-				boolean bl2 = (t & 2) == 0;
-				boolean bl3 = (t & 1) == 0;
-				aa = bl ? l : l + 1;
-				ab = bl2 ? m : m + 1;
-				int r = bl3 ? n : n + 1;
-				double g = bl ? d : d - 1.0D;
-				double h = bl2 ? e : e - 1.0D;
-				double s = bl3 ? f : f - 1.0D;
-				ds[t] = calcSquaredDistance(seed, aa, ab, r, g, h, s);
-			}
-			
-			t = 0;
-			double u = ds[0];
-			
-			int v;
-			for (v = 1; v < 8; ++v) {
-				if (u > ds[v]) {
-					t = v;
-					u = ds[v];
-				}
-			}
-			
-			v = (t & 4) == 0 ? l : l + 1;
-			aa = (t & 2) == 0 ? m : m + 1;
-			ab = (t & 1) == 0 ? n : n + 1;
-			return (int) layerSamplerSampleMethod.invokeExact(builtLayerSampler, v, ab);
+	    public int getFullResBiome(long seed, int x, int z) throws Throwable {
+	        int x1 = x - 2;
+	        int y1 = -2;
+	        int z1 = z - 2;
+
+	        int x2 = x1 >> 2;
+	        int y2 = y1 >> 2;
+	        int z2 = z1 >> 2;
+
+	        double x3 = (double) (x1 & 3) / 4.0D;
+	        double y3 = (double) (y1 & 3) / 4.0D;
+	        double z3 = (double) (z1 & 3) / 4.0D;
+
+	        int retX = Integer.MIN_VALUE;
+	        int retZ = Integer.MIN_VALUE;
+
+	        // This code would normally allocate an array to store each iteration's results, then scan back over it
+	        // to determine the closest one. We can avoid the unnecessary step and simply keep track of the nearest one.
+	        double minDist = Double.POSITIVE_INFINITY;
+
+	        for (int i = 0; i < 8; i++) {
+	            // Block sample positions
+	            int bX;
+	            int bY;
+	            int bZ;
+
+	            // Sample positions
+	            double sX;
+	            double sY;
+	            double sZ;
+
+	            if ((i & 0b100) == 0) {
+	                bX = x2;
+	                sX = x3;
+	            } else {
+	                bX = x2 + 1;
+	                sX = x3 - 1.0D;
+	            }
+
+	            if ((i & 0b010) == 0) {
+	                bY = y2;
+	                sY = y3;
+	            } else {
+	                bY = y2 + 1;
+	                sY = y3 - 1.0D;
+	            }
+
+	            if ((i & 0b001) == 0) {
+	                bZ = z2;
+	                sZ = z3;
+	            } else {
+	                bZ = z2 + 1;
+	                sZ = z3 - 1.0D;
+	            }
+
+	            double dist = calcSquaredDistance(seed, bX, bY, bZ, sX, sY, sZ);
+
+	            if (minDist > dist) {
+	                minDist = dist;
+
+	                retX = bX;
+	                retZ = bZ;
+	            }
+	        }
+
+			return (int) layerSamplerSampleMethod.invokeExact(builtLayerSampler, retX, retZ);
 		}
 		
 		private double calcSquaredDistance(long seed, int x, int y, int z, double xFraction, double yFraction,
@@ -423,10 +446,9 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 			return square(zFraction + f) + square(yFraction + e) + square(xFraction + d);
 		}
 		
-		private double distribute(long seed) {
-			double d = (double) ((int) Math.floorMod(seed >> 24, 1024L)) / 1024.0D;
-			return (d - 0.5D) * 0.9D;
-		}
+	    private double distribute(long seed) {
+	        return (((seed >> 24) & 1023L) - 512) * 0.00087890625; // * 0.9 / 1024.0d
+	    }
 		
 		private double square(double d) {
 			return d * d;
