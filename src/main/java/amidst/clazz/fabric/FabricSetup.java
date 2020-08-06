@@ -1,34 +1,27 @@
 package amidst.clazz.fabric;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.function.Supplier;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
 
 import amidst.logging.AmidstLogger;
+import edu.emory.mathcs.backport.java.util.Arrays;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
@@ -43,7 +36,6 @@ import net.fabricmc.loader.game.GameProviders;
 import net.fabricmc.loader.launch.common.FabricLauncher;
 import net.fabricmc.loader.launch.common.FabricLauncherBase;
 import net.fabricmc.loader.launch.common.FabricMixinBootstrap;
-import net.fabricmc.loader.launch.common.MappingConfiguration;
 import net.fabricmc.loader.launch.knot.Knot;
 import net.fabricmc.loader.metadata.EntrypointMetadata;
 
@@ -52,6 +44,7 @@ public enum FabricSetup {
 	private static final EnvType ENVIRONMENT_TYPE = EnvType.CLIENT;
 	private static final boolean DEVELOPMENT = false;
 	private static final boolean DEBUG_LOGGING = true;
+	private static final boolean COMPATABILITY_CLASSLOADER = true;
 	@SuppressWarnings("unused")
 	private static final String MAPPINGS_NAMESPACE = "official";
 	
@@ -82,9 +75,10 @@ public enum FabricSetup {
 		provider.acceptArguments(args);
 		
 		// Reflect classloader instance
-		Constructor<?> constructor = Class.forName("net.fabricmc.loader.launch.knot.KnotClassLoader").getDeclaredConstructors()[0];
+		String classLoaderName = COMPATABILITY_CLASSLOADER ? "net.fabricmc.loader.launch.knot.KnotCompatibilityClassLoader" : "net.fabricmc.loader.launch.knot.KnotClassLoader";
+		Constructor<?> constructor = Class.forName(classLoaderName).getDeclaredConstructors()[0];
 		constructor.setAccessible(true);
-		ClassLoader classLoader = (ClassLoader) constructor.newInstance(DEVELOPMENT, ENVIRONMENT_TYPE, provider);
+		URLClassLoader classLoader = (URLClassLoader) constructor.newInstance(DEVELOPMENT, ENVIRONMENT_TYPE, provider);
 		
 		// Merge classloaders into new KnotClassLoader
 		try {
@@ -92,17 +86,25 @@ public enum FabricSetup {
 		    method.setAccessible(true);
 		    
 			for (URL url : ucl.getURLs()) { // given class loader
+				String urlString = url.toString().toLowerCase();
 				method.invoke(classLoader, url);
 			}
 			
 			for (URL url : ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs()) { // app class loader
 				String urlString = url.toString().toLowerCase();
-				if (!urlString.contains("fabric") && !urlString.contains("mixin")) { // this makes sure that when we call EntrypointUtils.invoke we don't get a ClassCastException
+				if (!urlString.contains("fabric")/* && !urlString.contains("mixin")*/) { // this makes sure that when we call EntrypointUtils.invoke we don't get a ClassCastException
+					AmidstLogger.info("Added to class loader: " + url);
 					method.invoke(classLoader, url);
 				}
 			}
 		} catch (Throwable e) {
 			AmidstLogger.error("Unable to add URLs to classpath");
+		}
+		
+		TreeSet<URL> set = new TreeSet<URL>((u1,u2) -> u1.toString().compareToIgnoreCase(u2.toString()));
+		set.addAll(Arrays.asList(classLoader.getURLs()));
+		for (URL url : set) {
+			AmidstLogger.info("Classpath includes: " + url);
 		}
 		
 		setProperties(new HashMap<>());
@@ -264,10 +266,6 @@ public enum FabricSetup {
 		entryList.add((Object) c1.newInstance(null, adapterMap.get(dummyMetadata.getAdapter()), dummyMetadata.getValue()));
 	}
 	
-	private static void modifyMappingConfiguration() throws Throwable {
-		MappingConfiguration.class.getDeclaredField("checkedMappings");
-	}
-	
 	@SuppressWarnings("unused")
 	private static void setMappingsNamespace(String namespace, FabricLoader loader) throws Throwable { // RUN THIS ONLY AFTER KNOT HAS BEEN CREATED SO GETLAUNCHER RETURNS CORRECTLY
 		Constructor<?> c1 = Class.forName("net.fabricmc.loader.FabricMappingResolver").getDeclaredConstructor(Supplier.class, String.class);
@@ -278,46 +276,6 @@ public enum FabricSetup {
 		f1.setAccessible(true);
 		f1.set(loader, newInstance);
 	}
-	
-	@SuppressWarnings({ "unchecked", "unused" })
-	private static String getOfficialMappings(FabricLoader loader, GameProvider provider) throws Throwable {
-		Path mappingsFile = loader.getGameDir().resolve(".mixin.out" + File.separatorChar + "mappings" + File.separatorChar + "official-" + provider.getRawGameVersion() + ".txt");
-		String mappingsFileString = mappingsFile.toAbsolutePath().toString();
-		
-		if (Files.exists(mappingsFile)) {
-			AmidstLogger.info("Official mappings found at " + mappingsFileString);
-			
-		} else {
-			Files.createDirectories(mappingsFile.getParent());
-			AmidstLogger.info("Downloading official mappings...");
-			String versionManifest = IOUtils.toString(new URL("https://launchermeta.mojang.com/mc/game/version_manifest.json"), (Charset) null);
-			JSONObject manifestRoot = (JSONObject) JSONValue.parse(versionManifest);
-			JSONArray versions = (JSONArray) manifestRoot.get("versions");
-			
-			JSONObject correctVersion = null;
-			for (JSONObject version : (List<JSONObject>) versions) {
-				if (((String) version.get("id")).equals(provider.getRawGameVersion())) {
-					correctVersion = version;
-					break;
-				}
-			}
-			
-			String versionMeta = IOUtils.toString(new URL((String) correctVersion.get("url")), (Charset) null);
-			JSONObject metaRoot = (JSONObject) JSONValue.parse(versionMeta);
-			String mappingsUrl = (String) ((JSONObject) ((JSONObject) metaRoot.get("downloads")).get("client_mappings")).get("url");
-			
-			ReadableByteChannel readableByteChannel = Channels.newChannel(new URL(mappingsUrl).openStream());
-			try (FileOutputStream fileOutputStream = new FileOutputStream(mappingsFileString)) {
-				fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-			}
-			
-			AmidstLogger.info("Official mappings saved to " + mappingsFileString);
-			
-		}
-		return mappingsFileString;
-	}
-	
-	
 	
 	public static interface DummyEntrypoint {}
 	public static class DummyClass implements DummyEntrypoint {}
