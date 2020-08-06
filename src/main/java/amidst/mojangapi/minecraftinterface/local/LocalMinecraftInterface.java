@@ -102,13 +102,14 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 		worldProperties.setProperty("level-type", getTrueWorldTypeName(worldType));
 		worldProperties.setProperty("generator-settings", generatorOptions);
 
-		SymbolicObject worldSettings = (SymbolicObject) worldGenSettingsClass.callStaticMethod(
-			SymbolicNames.METHOD_WORLD_GEN_SETTINGS_CREATE, worldProperties);
+		Object worldSettings = worldGenSettingsClass.getMethod(SymbolicNames.METHOD_WORLD_GEN_SETTINGS_CREATE).getRawMethod().invoke(null, worldProperties);
 
-		Object chunkGenerator = worldSettings.callMethod(SymbolicNames.METHOD_WORLD_GEN_SETTINGS_OVERWORLD);
+		SymbolicObject symbolicWorldSettings = new SymbolicObject(worldGenSettingsClass, worldSettings);
+		
+		Object chunkGenerator = symbolicWorldSettings.callMethod(SymbolicNames.METHOD_WORLD_GEN_SETTINGS_OVERWORLD);
 		if (chunkGenerator instanceof Boolean || chunkGenerator instanceof Set<?>) {
 			 // Oops, we called the wrong method
-			chunkGenerator = worldSettings.callMethod(SymbolicNames.METHOD_WORLD_GEN_SETTINGS_OVERWORLD2);
+			chunkGenerator = symbolicWorldSettings.callMethod(SymbolicNames.METHOD_WORLD_GEN_SETTINGS_OVERWORLD2);
 		}
 
 		// This is more robust than declaring a symbolic method, if the name ever changes
@@ -151,13 +152,12 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 	    }
 
 	    try {
-	    	Object metaRegistry = registryClass.getStaticFieldValue(SymbolicNames.FIELD_REGISTRY_META_REGISTRY);
-	    	if (!(metaRegistry instanceof SymbolicObject)) { // Oops, we called the wrong method
+	    	Object metaRegistry = registryClass.getField(SymbolicNames.FIELD_REGISTRY_META_REGISTRY).getRawField().get(null);
+	    	if (metaRegistry == null) { // Oops, we called the wrong method
 	    		String name = RecognisedVersion.isOlder(recognisedVersion, RecognisedVersion._1_16_pre1) ?
 						SymbolicNames.FIELD_REGISTRY_META_REGISTRY2 : SymbolicNames.FIELD_REGISTRY_META_REGISTRY3;
 		    	metaRegistry = registryClass.getStaticFieldValue(name);
 	    	}
-	    	metaRegistry = ((SymbolicObject) metaRegistry).getObject();
 
 	    	stopAllExecutors();
 
@@ -190,13 +190,9 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 	        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 	    Object registryKey;
 	    if (resourceKeyClass.hasConstructor(SymbolicNames.CONSTRUCTOR_RESOURCE_KEY)) {
-	    	registryKey = resourceKeyClass
-	                .callConstructor(SymbolicNames.CONSTRUCTOR_RESOURCE_KEY, key)
-	                .getObject();
+	    	registryKey = resourceKeyClass.getConstructor(SymbolicNames.CONSTRUCTOR_RESOURCE_KEY).getRawConstructor().newInstance(key);
 	    } else if (registryClass.hasMethod(SymbolicNames.METHOD_REGISTRY_CREATE_KEY)) {
-	    	registryKey = ((SymbolicObject) registryClass
-	    			.callStaticMethod(SymbolicNames.METHOD_REGISTRY_CREATE_KEY, key))
-	    			.getObject();
+	    	registryKey = registryClass.getMethod(SymbolicNames.METHOD_REGISTRY_CREATE_KEY).getRawMethod().invoke(null, key);
 	    } else {
 	    	throw new MinecraftInterfaceException("couldn't create registry key");
 	    }

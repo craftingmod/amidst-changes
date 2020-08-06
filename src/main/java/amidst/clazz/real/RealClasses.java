@@ -3,7 +3,6 @@ package amidst.clazz.real;
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,13 +10,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import amidst.documentation.Immutable;
-import amidst.parsing.URIUtils;
+import net.fabricmc.loader.util.FileSystemUtil;
 
 @Immutable
 public enum RealClasses {
 	;
-
-	private static final int MAXIMUM_CLASS_BYTES = 32 * 1024;
+	
 	private static final RealClassBuilder REAL_CLASS_BUILDER = new RealClassBuilder();
 
 	public static List<RealClass> fromJarFile(Path jarFile) throws FileNotFoundException, JarFileParsingException {
@@ -31,9 +29,9 @@ public enum RealClasses {
 			throw new FileNotFoundException("Attempted to load jar file at: " + jarFile + " but it does not exist.");
 		}
 
-		try (FileSystem jarContents = URIUtils.openZipFile(jarFile.toUri())){
+		try (FileSystem jarContents = FileSystemUtil.getJarFileSystem(jarFile, true).get()){
 			return readJarFile(jarContents);
-		} catch (IOException | RealClassCreationException | URISyntaxException e) {
+		} catch (IOException | RealClassCreationException e) {
 			throw new JarFileParsingException("Error extracting jar data.", e);
 		}
 	}
@@ -50,7 +48,7 @@ public enum RealClasses {
 			throws IOException,
 			RealClassCreationException {
 		for (Path path: (Iterable<Path>) Files.list(directory)::iterator) {
-			String realClassName = getFileNameWithoutExtension(path.getFileName().toString(), "class");
+			String realClassName = getPathWithoutExtension(path.toString(), "class");
 			if (Files.isDirectory(path)) {
 				readJarFileDirectory(path, result);
 			} else if (realClassName != null) {
@@ -66,16 +64,13 @@ public enum RealClasses {
 			throws IOException,
 			RealClassCreationException {
 		try (BufferedInputStream theStream = stream) {
-			// TODO: Double check that this filter won't mess anything up.
-			if (theStream.available() < MAXIMUM_CLASS_BYTES) {
-				byte[] classData = new byte[theStream.available()];
-				theStream.read(classData);
-				return REAL_CLASS_BUILDER.construct(realClassName, classData);
-			}
+			byte[] classData = new byte[theStream.available()];
+			theStream.read(classData);
+			return REAL_CLASS_BUILDER.construct(realClassName, classData);
 		}
-		return null;
 	}
 
+	@SuppressWarnings("unused")
 	private static String getFileNameWithoutExtension(String fileName, String extension) {
 		String[] split = fileName.split("\\.");
 		if (split.length == 2 && split[0].indexOf('/') == -1 && split[1].equals(extension)) {
@@ -84,4 +79,15 @@ public enum RealClasses {
 			return null;
 		}
 	}
+	
+	private static String getPathWithoutExtension(String path, String extension) {
+		String noExt = path.split("\\." + extension)[0];
+		noExt = noExt.replace('/', '.');
+		if (noExt.charAt(0) == '.') {
+			return noExt.substring(1);
+		} else {
+			return noExt;
+		}
+	}
+	
 }

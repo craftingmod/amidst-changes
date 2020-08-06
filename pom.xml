@@ -10,6 +10,14 @@
 			<id>jitpack.io</id>
 			<url>https://jitpack.io</url>
 		</repository>
+		<repository>
+			<id>Fabric</id>
+			<url>https://maven.fabricmc.net</url>
+		</repository>
+		<repository>
+			<id>Minecraft</id>
+			<url>https://libraries.minecraft.net</url>
+		</repository>
 	</repositories>
 	<properties>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
@@ -17,6 +25,16 @@
 	<build>
 		<finalName>${amidst.build.filename}</finalName>
 		<plugins>
+			<plugin>
+				<groupId>net.fabricmc</groupId>
+				<artifactId>fabric-loom</artifactId>
+				<version>0.4-SNAPSHOT</version>
+				<configuration>
+					<minecraft>com.mojang:minecraft:1.16.1</minecraft>
+					<mappings>net.fabricmc:yarn:1.16.1+build.1:v2</mappings>
+					<modImplementation>net.fabricmc:fabric-loader:0.8.8+build.202</modImplementation>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>properties-maven-plugin</artifactId>
@@ -66,7 +84,8 @@
 						<configuration>
 							<filters>
 								<filter>
-									<!-- This ends up being used by the Minecraft JAR, so makes sure we keep everything -->
+									<!-- This ends up being used by the Minecraft JAR, so makes sure 
+										we keep everything -->
 									<artifact>com.google.code.gson:gson</artifact>
 									<includes>
 										<include>**</include>
@@ -124,5 +143,88 @@
 			<scope>provided</scope>
 			<type>maven-plugin</type>
 		</dependency>
+
+		<dependency>
+			<groupId>net.fabricmc</groupId>
+			<artifactId>fabric-loom</artifactId>
+			<version>0.4-SNAPSHOT</version>
+		</dependency>
+		<!-- <dependency> <groupId>com.mojang</groupId> <artifactId>minecraft</artifactId> 
+			<version>1.16.1</version> </dependency> -->
+		<dependency>
+			<groupId>net.fabricmc</groupId>
+			<artifactId>yarn</artifactId>
+			<version>1.16.1+build.1</version>
+		</dependency>
+		<dependency>
+			<groupId>net.fabricmc</groupId>
+			<artifactId>fabric-loader</artifactId>
+			<version>0.9.0+build.204</version>
+		</dependency>
+		<!--
+		<dependency>
+			<groupId>net.fabricmc.fabric-api</groupId>
+			<artifactId>fabric-api</artifactId>
+			<version>0.16.3+build.390-1.16</version>
+		</dependency>
+		-->
+		<!--
+		<dependency>
+			<groupId>net.fabricmc</groupId>
+			<artifactId>sponge-mixin</artifactId>
+			<version>0.8.1+build.20</version>
+		</dependency>
+		-->
+		<dependency>
+			<groupId>net.fabricmc</groupId>
+			<artifactId>fabric-loader-sat4j</artifactId>
+			<version>2.3.5.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.13.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.jimfs</groupId>
+			<artifactId>jimfs</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>net.fabricmc</groupId>
+			<artifactId>tiny-mappings-parser</artifactId>
+			<version>0.2.2.14</version>
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm-commons</artifactId>
+			<version>8.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.fabricmc</groupId>
+			<artifactId>tiny-remapper</artifactId>
+			<version>0.3.0.70</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.burgerguy</groupId>
+			<artifactId>Mixin</artifactId>
+			<version>fabric-0.8-SNAPSHOT</version>
+		</dependency>
+		<!-- <dependency> <groupId>com.github.FabricMC</groupId> <artifactId>fabric-loader</artifactId> 
+			<version>master-SNAPSHOT</version> </dependency> <dependency> <groupId>org.ow2.asm</groupId> 
+			<artifactId>asm</artifactId> <version>8.0</version> </dependency> <dependency> 
+			<groupId>org.ow2.asm</groupId> <artifactId>asm-tree</artifactId> <version>8.0</version> 
+			</dependency> <dependency> <groupId>org.ow2.asm</groupId> <artifactId>asm-commons</artifactId> 
+			<version>8.0</version> </dependency> -->
 	</dependencies>
 </project>
