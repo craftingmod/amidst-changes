@@ -1,14 +1,12 @@
 package amidst.clazz;
 
 import java.io.FileNotFoundException;
-import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import amidst.clazz.fabric.FabricSetup;
 import amidst.clazz.real.JarFileParsingException;
 import amidst.clazz.real.RealClass;
 import amidst.clazz.real.RealClasses;

@@ -23,6 +23,7 @@ import org.spongepowered.asm.mixin.Mixins;
 import amidst.logging.AmidstLogger;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.FabricLoader;
@@ -86,14 +87,12 @@ public enum FabricSetup {
 		    method.setAccessible(true);
 		    
 			for (URL url : ucl.getURLs()) { // given class loader
-				String urlString = url.toString().toLowerCase();
 				method.invoke(classLoader, url);
 			}
 			
 			for (URL url : ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs()) { // app class loader
 				String urlString = url.toString().toLowerCase();
 				if (!urlString.contains("fabric")/* && !urlString.contains("mixin")*/) { // this makes sure that when we call EntrypointUtils.invoke we don't get a ClassCastException
-					AmidstLogger.info("Added to class loader: " + url);
 					method.invoke(classLoader, url);
 				}
 			}
@@ -142,7 +141,7 @@ public enum FabricSetup {
 		
 		loader.getAccessWidener().loadFromMods();
 		
-		Mixins.registerErrorHandlerClass("amidst.clazz.fabric.AmidstMixinErrorHandler");
+//		Mixins.registerErrorHandlerClass("amidst.clazz.fabric.AmidstMixinErrorHandler");
 
 		MixinBootstrap.init();
 		
@@ -186,6 +185,7 @@ public enum FabricSetup {
 		EntrypointUtils.invoke("preLaunch", PreLaunchEntrypoint.class, PreLaunchEntrypoint::onPreLaunch);
 		EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
 		EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
+		//EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
 		
 		//MixinBootstrap.getPlatform().inject();
 		

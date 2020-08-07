@@ -99,48 +99,80 @@
 			</plugin>
 		</plugins>
 	</build>
-	<dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>2.8.6</version>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.miglayout</groupId>
+				<artifactId>miglayout-swing</artifactId>
+				<version>4.2</version>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>args4j</groupId>
+				<artifactId>args4j</artifactId>
+				<version>2.32</version>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.github.Querz</groupId>
+				<artifactId>NBT</artifactId>
+				<version>5.5</version>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.11</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<scope>provided</scope>
+				<type>maven-plugin</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	<dependencies>		
+		<!--FABRIC/MIXIN DEPENDENCIES START-->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.8.6</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.miglayout</groupId>
 			<artifactId>miglayout-swing</artifactId>
-			<version>4.2</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>args4j</groupId>
 			<artifactId>args4j</artifactId>
-			<version>2.32</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.github.Querz</groupId>
 			<artifactId>NBT</artifactId>
-			<version>5.5</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.mojo</groupId>
 			<artifactId>properties-maven-plugin</artifactId>
-			<version>1.0.0</version>
 			<scope>provided</scope>
 			<type>maven-plugin</type>
 		</dependency>
-
-		<dependency>
-			<groupId>net.fabricmc</groupId>
-			<artifactId>fabric-loom</artifactId>
-			<version>0.4-SNAPSHOT</version>
-		</dependency>
-		<!-- <dependency> <groupId>com.mojang</groupId> <artifactId>minecraft</artifactId> 
-			<version>1.16.1</version> </dependency> -->
 		<dependency>
 			<groupId>net.fabricmc</groupId>
 			<artifactId>yarn</artifactId>
@@ -151,13 +183,6 @@
 			<artifactId>fabric-loader</artifactId>
 			<version>0.9.0+build.204</version>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>net.fabricmc.fabric-api</groupId>
-			<artifactId>fabric-api</artifactId>
-			<version>0.16.3+build.390-1.16</version>
-		</dependency>
-		-->
 		<dependency>
 			<groupId>net.fabricmc</groupId>
 			<artifactId>sponge-mixin</artifactId>
@@ -184,25 +209,9 @@
 			<version>0.2.2.14</version>
 		</dependency>
 		<dependency>
-			<groupId>org.ow2.asm</groupId>
-			<artifactId>asm-commons</artifactId>
-			<version>8.0</version>
-		</dependency>
-		<dependency>
 			<groupId>net.fabricmc</groupId>
 			<artifactId>tiny-remapper</artifactId>
 			<version>0.3.0.70</version>
 		</dependency>
-		<dependency>
-			<groupId>org.ow2.asm</groupId>
-			<artifactId>asm-tree</artifactId>
-			<version>8.0</version>
-		</dependency>
-		<!-- <dependency> <groupId>com.github.FabricMC</groupId> <artifactId>fabric-loader</artifactId> 
-			<version>master-SNAPSHOT</version> </dependency> <dependency> <groupId>org.ow2.asm</groupId> 
-			<artifactId>asm</artifactId> <version>8.0</version> </dependency> <dependency> 
-			<groupId>org.ow2.asm</groupId> <artifactId>asm-tree</artifactId> <version>8.0</version> 
-			</dependency> <dependency> <groupId>org.ow2.asm</groupId> <artifactId>asm-commons</artifactId> 
-			<version>8.0</version> </dependency> -->
 	</dependencies>
 </project>
