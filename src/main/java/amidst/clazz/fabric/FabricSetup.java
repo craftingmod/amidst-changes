@@ -10,8 +10,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
-import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -20,14 +18,10 @@ import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import amidst.logging.AmidstLogger;
-import edu.emory.mathcs.backport.java.util.Arrays;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.FabricLoader;
-import net.fabricmc.loader.ModContainer;
-import net.fabricmc.loader.api.LanguageAdapter;
-import net.fabricmc.loader.api.MappingResolver;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 import net.fabricmc.loader.entrypoint.minecraft.hooks.EntrypointUtils;
 import net.fabricmc.loader.game.GameProvider;
@@ -36,7 +30,6 @@ import net.fabricmc.loader.launch.common.FabricLauncher;
 import net.fabricmc.loader.launch.common.FabricLauncherBase;
 import net.fabricmc.loader.launch.common.FabricMixinBootstrap;
 import net.fabricmc.loader.launch.knot.Knot;
-import net.fabricmc.loader.metadata.EntrypointMetadata;
 
 public enum FabricSetup {
 	;
@@ -90,7 +83,7 @@ public enum FabricSetup {
 			
 			for (URL url : ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs()) { // app class loader
 				String urlString = url.toString().toLowerCase();
-				if (!urlString.contains("fabric")/* && !urlString.contains("mixin")*/) { // this makes sure that when we call EntrypointUtils.invoke we don't get a ClassCastException
+				if (!urlString.contains("fabric") && !urlString.contains("mixin")) { // this makes sure that when we call EntrypointUtils.invoke we don't get a ClassCastException
 					method.invoke(classLoader, url);
 				}
 			}
@@ -98,11 +91,11 @@ public enum FabricSetup {
 			AmidstLogger.error("Unable to add URLs to classpath");
 		}
 		
-		TreeSet<URL> set = new TreeSet<URL>((u1,u2) -> u1.toString().compareToIgnoreCase(u2.toString()));
-		set.addAll(Arrays.asList(classLoader.getURLs()));
-		for (URL url : set) {
-			AmidstLogger.info("Classpath includes: " + url);
-		}
+//		TreeSet<URL> set = new TreeSet<URL>((u1,u2) -> u1.toString().compareToIgnoreCase(u2.toString()));
+//		set.addAll(Arrays.asList(classLoader.getURLs()));
+//		for (URL url : set) {
+//			AmidstLogger.info("Classpath includes: " + url);
+//		}
 		
 		setProperties(new HashMap<>());
 		
@@ -122,6 +115,8 @@ public enum FabricSetup {
 			}
 		}
 		
+		Path intermediaryJarPath = provider.getLaunchDirectory().resolve(".fabric" + File.separatorChar + "remappedJars" + File.separatorChar + provider.getGameId() + "-" + provider.getRawGameVersion() + File.separatorChar + knot.getTargetNamespace() + "-" + provider.getRawGameVersion() + ".jar").toAbsolutePath();
+		
 		// Locate entrypoints before switching class loaders
 		provider.getEntrypointTransformer().locateEntrypoints(knot);
 		
@@ -131,56 +126,28 @@ public enum FabricSetup {
 		
 		@SuppressWarnings("deprecation")
 		FabricLoader loader = FabricLoader.INSTANCE;
-//		setMappingsNamespace(MAPPINGS_NAMESPACE, loader);
 		loader.setGameProvider(provider);
 		loader.load();
 		loader.freeze();
-		addDummyToEntrypointStorage(loader);
 		
 		loader.getAccessWidener().loadFromMods();
-		
-//		Mixins.registerErrorHandlerClass("amidst.clazz.fabric.AmidstMixinErrorHandler");
 
 		MixinBootstrap.init();
 		
 		MixinEnvironment env = MixinEnvironment.getDefaultEnvironment();
-		
 		if (DEBUG_LOGGING) env.setOption(MixinEnvironment.Option.DEBUG_VERBOSE, true);
-//		System.setProperty("mixin.env.disableRefMap", "true");
-//		env.setOption(MixinEnvironment.Option.DISABLE_REFMAP, true);
-//		env.setOption(MixinEnvironment.Option.REFMAP_REMAP, true);
-//		System.setProperty("mixin.env.remapRefMap", "true");
-		
-//		TinyRemapper remapper = TinyRemapper.newRemapper()
-//									.withMappings(
-//										TinyRemapperMappingsHelper.create(
-//											FabricLauncherBase.getLauncher().getMappingConfiguration().getMappings(),
-//											MAPPINGS_NAMESPACE,
-//											knot.getTargetNamespace()
-//										)
-//									)
-//									.rebuildSourceFilenames(true)
-//									.ignoreFieldDesc(true)
-//									.build();
-		
-		Path intermediaryJarPath = loader.getGameDir().resolve(".fabric" + File.separatorChar + "remappedJars" + File.separatorChar + provider.getGameId() + "-" + provider.getRawGameVersion() + File.separatorChar + knot.getTargetNamespace() + "-" + provider.getRawGameVersion() + ".jar").toAbsolutePath();
-//		remapper.readInputs(intermediaryJarPath);
-		
-//		env.getRemappers().add(new RemapperAdapter(remapper.getRemapper()) {});
-		
-//		env.setObfuscationContext(MAPPINGS_NAMESPACE);
 		
 		FabricMixinBootstrap.init(ENVIRONMENT_TYPE, loader);
 		finishMixinBootstrapping();
 		
 		initializeTransformers(classLoader);
 		
-		// We have to load a dummy class with a dummy entrypoint before anything
-		// else so the ClassLoader doesn't recurse and cause a LinkageError during
-		// mixin initialization
-		EntrypointUtils.invoke("dummy", Class.forName("amidst.clazz.fabric.FabricSetup$DummyEntrypoint", true, classLoader), d -> {});
-		
 		EntrypointUtils.invoke("preLaunch", PreLaunchEntrypoint.class, PreLaunchEntrypoint::onPreLaunch);
+		loadEntrypoint(provider, ENVIRONMENT_TYPE, classLoader); // This is done to imitate what fabric loader would be doing at
+																 // this stage. After invoking the preLaunch entrypoint, it loads
+																 // the main Minecraft class and invokes the main, where the main
+																 // entrypoint would have been invoked naturally.
+		
 		EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
 		EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
 		//EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
@@ -238,41 +205,14 @@ public enum FabricSetup {
 		f3.set(knot, provider);
 	}
 	
-	@SuppressWarnings("unchecked")
-	private static void addDummyToEntrypointStorage(FabricLoader loader) throws Throwable {
-		EntrypointMetadata dummyMetadata = new EntrypointMetadata() {
-			public String getAdapter() { return "default"; }
-			public String getValue() { return "amidst.clazz.fabric.FabricSetup$DummyClass"; }
-		};
+	private static void loadEntrypoint(GameProvider provider, EnvType envType, ClassLoader loader) throws Throwable {
+		String targetClass = provider.getEntrypoint();
 		
-		Field f1 = FabricLoader.class.getDeclaredField("entrypointStorage");
-		f1.setAccessible(true);
-		Object entrypointStorage = f1.get(loader);
+		if (envType == EnvType.CLIENT && targetClass.contains("Applet")) {
+			targetClass = "net.fabricmc.loader.entrypoint.applet.AppletMain";
+		}
 		
-		Class<?> esClass = Class.forName("net.fabricmc.loader.EntrypointStorage");
-		Method m1 = esClass.getDeclaredMethod("getOrCreateEntries", String.class);
-		m1.setAccessible(true);
-		List<Object> entryList = (List<Object>) m1.invoke(entrypointStorage, "dummy");
-		
-		Field f2 = FabricLoader.class.getDeclaredField("adapterMap");
-		f2.setAccessible(true);
-		Map<String, LanguageAdapter> adapterMap = (Map<String, LanguageAdapter>) f2.get(loader);
-		
-		Class<?> neClass = Class.forName("net.fabricmc.loader.EntrypointStorage$NewEntry");
-		Constructor<?> c1 = neClass.getDeclaredConstructor(ModContainer.class, LanguageAdapter.class, String.class);
-		c1.setAccessible(true);
-		entryList.add((Object) c1.newInstance(null, adapterMap.get(dummyMetadata.getAdapter()), dummyMetadata.getValue()));
-	}
-	
-	@SuppressWarnings("unused")
-	private static void setMappingsNamespace(String namespace, FabricLoader loader) throws Throwable { // RUN THIS ONLY AFTER KNOT HAS BEEN CREATED SO GETLAUNCHER RETURNS CORRECTLY
-		Constructor<?> c1 = Class.forName("net.fabricmc.loader.FabricMappingResolver").getDeclaredConstructor(Supplier.class, String.class);
-		c1.setAccessible(true);
-		MappingResolver newInstance = (MappingResolver) c1.newInstance((Supplier<?>) FabricLauncherBase.getLauncher().getMappingConfiguration()::getMappings, namespace);
-		
-		Field f1 = FabricLoader.class.getDeclaredField("mappingResolver");
-		f1.setAccessible(true);
-		f1.set(loader, newInstance);
+		loader.loadClass(targetClass);
 	}
 	
 	public static interface DummyEntrypoint {}
