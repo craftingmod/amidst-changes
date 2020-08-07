@@ -215,7 +215,4 @@ public enum FabricSetup {
 		loader.loadClass(targetClass);
 	}
 	
-	public static interface DummyEntrypoint {}
-	public static class DummyClass implements DummyEntrypoint {}
-	
 }
