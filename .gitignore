@@ -20,8 +20,8 @@ target/
 devtools.properties
 tests
 .settings/org.eclipse.jdt.core.prefs
-mods/
-.fabric/
-.mixin.out/
-.settings/
-config/
+mods/*
+.fabric/*
+.mixin.out/*
+.settings/*
+config/*
