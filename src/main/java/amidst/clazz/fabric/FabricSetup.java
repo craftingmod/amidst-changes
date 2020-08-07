@@ -7,9 +7,11 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -18,7 +20,6 @@ import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import amidst.logging.AmidstLogger;
-import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.FabricLoader;
@@ -72,18 +73,34 @@ public enum FabricSetup {
 		constructor.setAccessible(true);
 		URLClassLoader classLoader = (URLClassLoader) constructor.newInstance(DEVELOPMENT, ENVIRONMENT_TYPE, provider);
 		
+		setProperties(new HashMap<>());
+		
+		Knot knot = createKnotInstance(ENVIRONMENT_TYPE, clientJarPath.toFile()); // DON'T CALL INIT ON THIS!!!
+		
+		setKnotVars(knot, classLoader, DEVELOPMENT, provider);
+		
 		// Merge classloaders into new KnotClassLoader
 		try {
 		    Method method = Class.forName("net.fabricmc.loader.launch.knot.KnotClassLoaderInterface").getDeclaredMethod("addURL", URL.class);
 		    method.setAccessible(true);
 		    
+//			for (URL url : knot.getLoadTimeDependencies()) { // knot's dependencies that usually are used for deobf
+//				String urlString = url.toString().toLowerCase();
+//				if (!urlString.contains("fabric") && !urlString.contains("mixin") && !urlString.contains("asm") && !urlString.contains("log4j")) {
+//					method.invoke(classLoader, url);
+//				}
+//			}
+			
 			for (URL url : ucl.getURLs()) { // given class loader
-				method.invoke(classLoader, url);
+				String urlString = url.toString().toLowerCase();
+				if (!urlString.contains("fabric") && !urlString.contains("mixin") && !urlString.contains("asm") && !urlString.contains("log4j")) {
+					method.invoke(classLoader, url);
+				}
 			}
 			
 			for (URL url : ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs()) { // app class loader
 				String urlString = url.toString().toLowerCase();
-				if (!urlString.contains("fabric") && !urlString.contains("mixin")) { // this makes sure that when we call EntrypointUtils.invoke we don't get a ClassCastException
+				if (!urlString.contains("fabric") && !urlString.contains("mixin") && !urlString.contains("asm") && !urlString.contains("log4j")) { // this makes sure that when we call EntrypointUtils.invoke we don't get a ClassCastException
 					method.invoke(classLoader, url);
 				}
 			}
@@ -91,17 +108,11 @@ public enum FabricSetup {
 			AmidstLogger.error("Unable to add URLs to classpath");
 		}
 		
-//		TreeSet<URL> set = new TreeSet<URL>((u1,u2) -> u1.toString().compareToIgnoreCase(u2.toString()));
-//		set.addAll(Arrays.asList(classLoader.getURLs()));
-//		for (URL url : set) {
-//			AmidstLogger.info("Classpath includes: " + url);
-//		}
-		
-		setProperties(new HashMap<>());
-		
-		Knot knot = createKnotInstance(ENVIRONMENT_TYPE, clientJarPath.toFile()); // DON'T CALL INIT ON THIS!!!
-		
-		setKnotVars(knot, classLoader, DEVELOPMENT, provider);
+		TreeSet<URL> set = new TreeSet<URL>((u1,u2) -> u1.toString().compareToIgnoreCase(u2.toString()));
+		set.addAll(Arrays.asList(classLoader.getURLs()));
+		for (URL url : set) {
+			AmidstLogger.info("Classpath includes: " + url);
+		}
 		
 		if (provider.isObfuscated()) {
 			for (Path path : provider.getGameContextJars()) {
@@ -149,10 +160,8 @@ public enum FabricSetup {
 																 // entrypoint would have been invoked naturally.
 		
 		EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
-		EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
+		//EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
 		//EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
-		
-		//MixinBootstrap.getPlatform().inject();
 		
 		return new Object[] { classLoader, intermediaryJarPath };
 	}
