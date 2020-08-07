@@ -141,7 +141,6 @@
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>		
-		<!--FABRIC/MIXIN DEPENDENCIES START-->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
@@ -173,6 +172,7 @@
 			<scope>provided</scope>
 			<type>maven-plugin</type>
 		</dependency>
+		<!--FABRIC/MIXIN DEPENDENCIES START-->
 		<dependency>
 			<groupId>net.fabricmc</groupId>
 			<artifactId>yarn</artifactId>
