@@ -130,13 +130,15 @@ public enum FabricSetup {
 		
 		initializeTransformers(classLoader);
 		
+		if (DEBUG_LOGGING) listAllEntrypoints(loader);
+		
 		EntrypointUtils.invoke("preLaunch", PreLaunchEntrypoint.class, PreLaunchEntrypoint::onPreLaunch);
 		loadEntrypoint(provider, ENVIRONMENT_TYPE, classLoader); // This is done to imitate what fabric loader would be doing at
 																 // this stage. After invoking the preLaunch entrypoint, it loads
 																 // the main Minecraft class and invokes the main, where the main
 																 // entrypoint would have been invoked naturally.
 		
-		EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
+		//EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
 		//EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
 		//EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
 		
@@ -209,6 +211,26 @@ public enum FabricSetup {
 			}
 		}
 		return false;
+	}
+	
+	private static void listAllEntrypoints(FabricLoader loader) throws Throwable {
+		Field f1 = FabricLoader.class.getDeclaredField("entrypointStorage");
+		f1.setAccessible(true);
+		Object entrypointStorage = f1.get(loader);
+		
+		Class<?> esClass = Class.forName("net.fabricmc.loader.EntrypointStorage");
+		Field f2 = esClass.getDeclaredField("entryMap");
+		f2.setAccessible(true);
+		
+		@SuppressWarnings("unchecked")
+		Map<String, List<?>> entryMap = (Map<String, List<?>>) f2.get(entrypointStorage);
+		
+		for(String entrypoint : entryMap.keySet()) {
+			AmidstLogger.debug("In entrypoint " + entrypoint + ":");
+			for (Object entry : entryMap.get(entrypoint)) {
+				AmidstLogger.debug("	Entry " + entry);
+			}
+		}
 	}
 	
 }
