@@ -76,26 +76,14 @@ public enum FabricSetup {
 		
 		setKnotVars(knot, classLoader, DEVELOPMENT, provider);
 		
-		// Merge classloaders into new KnotClassLoader
+		// Merge classloader into new KnotClassLoader
 		try {		    
-//			for (URL url : knot.getLoadTimeDependencies()) { // knot's dependencies that usually are used for deobf
-//				String urlString = url.toString().toLowerCase();
-//				if (!urlString.contains("fabric") && !urlString.contains("mixin") && !urlString.contains("asm") && !urlString.contains("log4j")) {
-//					knot.propose(url);
-//				}
-//			}
-			
 			for (URL url : ucl.getURLs()) { // given class loader
 				String urlString = url.toString().toLowerCase();
-				if (!urlString.contains("fabric") && !urlString.contains("mixin") && !urlString.contains("asm") && !urlString.contains("log4j")) {
+				if (!isInSystemClassPath(url) && !urlString.contains("fabric") && !urlString.contains("mixin") && !urlString.contains("asm") && !urlString.contains("log4j")) {
 					knot.propose(url);
-				}
-			}
-			
-			for (URL url : ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs()) { // app class loader
-				String urlString = url.toString().toLowerCase();
-				if (!urlString.contains("fabric") && !urlString.contains("mixin") && !urlString.contains("asm") && !urlString.contains("log4j")) { // this makes sure that when we call EntrypointUtils.invoke we don't get a ClassCastException
-					knot.propose(url);
+				} else {
+					AmidstLogger.debug("Rejected URL: " + url);
 				}
 			}
 			
@@ -212,6 +200,15 @@ public enum FabricSetup {
 		
 		if(DEBUG_LOGGING) AmidstLogger.debug("Loading GameProvider entrypoint: " + targetClass);
 		loader.loadClass(targetClass);
+	}
+	
+	private static boolean isInSystemClassPath(URL url) {
+		for (URL classpathUrl : ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs()) {
+			if (classpathUrl.sameFile(url)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }
