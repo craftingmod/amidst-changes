@@ -7,12 +7,9 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -37,7 +34,7 @@ public enum FabricSetup {
 	private static final EnvType ENVIRONMENT_TYPE = EnvType.CLIENT;
 	private static final boolean DEVELOPMENT = false;
 	private static final boolean DEBUG_LOGGING = true;
-	private static final boolean COMPATABILITY_CLASSLOADER = true;
+	private static final boolean COMPATABILITY_CLASSLOADER = false;
 	@SuppressWarnings("unused")
 	private static final String MAPPINGS_NAMESPACE = "official";
 	
@@ -68,10 +65,10 @@ public enum FabricSetup {
 		provider.acceptArguments(args);
 		
 		// Reflect classloader instance
-		String classLoaderName = COMPATABILITY_CLASSLOADER ? "net.fabricmc.loader.launch.knot.KnotCompatibilityClassLoader" : "net.fabricmc.loader.launch.knot.KnotClassLoader";
+		String classLoaderName = COMPATABILITY_CLASSLOADER || provider.requiresUrlClassLoader() ? "net.fabricmc.loader.launch.knot.KnotCompatibilityClassLoader" : "net.fabricmc.loader.launch.knot.KnotClassLoader";
 		Constructor<?> constructor = Class.forName(classLoaderName).getDeclaredConstructors()[0];
 		constructor.setAccessible(true);
-		URLClassLoader classLoader = (URLClassLoader) constructor.newInstance(DEVELOPMENT, ENVIRONMENT_TYPE, provider);
+		ClassLoader classLoader = (ClassLoader) constructor.newInstance(DEVELOPMENT, ENVIRONMENT_TYPE, provider);
 		
 		setProperties(new HashMap<>());
 		
@@ -80,38 +77,30 @@ public enum FabricSetup {
 		setKnotVars(knot, classLoader, DEVELOPMENT, provider);
 		
 		// Merge classloaders into new KnotClassLoader
-		try {
-		    Method method = Class.forName("net.fabricmc.loader.launch.knot.KnotClassLoaderInterface").getDeclaredMethod("addURL", URL.class);
-		    method.setAccessible(true);
-		    
+		try {		    
 //			for (URL url : knot.getLoadTimeDependencies()) { // knot's dependencies that usually are used for deobf
 //				String urlString = url.toString().toLowerCase();
 //				if (!urlString.contains("fabric") && !urlString.contains("mixin") && !urlString.contains("asm") && !urlString.contains("log4j")) {
-//					method.invoke(classLoader, url);
+//					knot.propose(url);
 //				}
 //			}
 			
 			for (URL url : ucl.getURLs()) { // given class loader
 				String urlString = url.toString().toLowerCase();
 				if (!urlString.contains("fabric") && !urlString.contains("mixin") && !urlString.contains("asm") && !urlString.contains("log4j")) {
-					method.invoke(classLoader, url);
+					knot.propose(url);
 				}
 			}
 			
 			for (URL url : ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs()) { // app class loader
 				String urlString = url.toString().toLowerCase();
 				if (!urlString.contains("fabric") && !urlString.contains("mixin") && !urlString.contains("asm") && !urlString.contains("log4j")) { // this makes sure that when we call EntrypointUtils.invoke we don't get a ClassCastException
-					method.invoke(classLoader, url);
+					knot.propose(url);
 				}
 			}
+			
 		} catch (Throwable e) {
 			AmidstLogger.error("Unable to add URLs to classpath");
-		}
-		
-		TreeSet<URL> set = new TreeSet<URL>((u1,u2) -> u1.toString().compareToIgnoreCase(u2.toString()));
-		set.addAll(Arrays.asList(classLoader.getURLs()));
-		for (URL url : set) {
-			AmidstLogger.info("Classpath includes: " + url);
 		}
 		
 		if (provider.isObfuscated()) {
@@ -221,6 +210,7 @@ public enum FabricSetup {
 			targetClass = "net.fabricmc.loader.entrypoint.applet.AppletMain";
 		}
 		
+		if(DEBUG_LOGGING) AmidstLogger.debug("Loading GameProvider entrypoint: " + targetClass);
 		loader.loadClass(targetClass);
 	}
 	
