@@ -25,6 +25,8 @@ import amidst.mojangapi.minecraftinterface.MinecraftInterfaceException;
 import amidst.mojangapi.minecraftinterface.RecognisedVersion;
 import amidst.mojangapi.world.WorldType;
 import amidst.util.ArrayCache;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.entrypoint.minecraft.hooks.EntrypointUtils;
 
 public class LocalMinecraftInterface implements MinecraftInterface {
 
@@ -160,6 +162,12 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 	    	}
 
 	    	stopAllExecutors();
+	    	
+	    	try {
+	    		EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
+	    	} catch(Throwable t) {
+	    		AmidstLogger.error("Something with fabric probably crashed, but we may be able to continue anyway.");
+	    	}
 
             biomeRegistry = Objects.requireNonNull(getFromRegistryByKey(metaRegistry, "biome"));
 

@@ -21,6 +21,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
+import net.fabricmc.loader.entrypoint.EntrypointTransformer;
 import net.fabricmc.loader.entrypoint.minecraft.hooks.EntrypointUtils;
 import net.fabricmc.loader.game.GameProvider;
 import net.fabricmc.loader.game.GameProviders;
@@ -106,7 +107,8 @@ public enum FabricSetup {
 		Path intermediaryJarPath = provider.getLaunchDirectory().resolve(".fabric" + File.separatorChar + "remappedJars" + File.separatorChar + provider.getGameId() + "-" + provider.getRawGameVersion() + File.separatorChar + knot.getTargetNamespace() + "-" + provider.getRawGameVersion() + ".jar").toAbsolutePath();
 		
 		// Locate entrypoints before switching class loaders
-		provider.getEntrypointTransformer().locateEntrypoints(knot);
+		fakeInitializeEntrypointTransformer(provider.getEntrypointTransformer());
+//		provider.getEntrypointTransformer().locateEntrypoints(knot);
 		
 		// This doesn't actually switch the classloader, this only does something if
 		// getContextClassLoader() gets called on the same thread somewhere else
@@ -226,11 +228,21 @@ public enum FabricSetup {
 		Map<String, List<?>> entryMap = (Map<String, List<?>>) f2.get(entrypointStorage);
 		
 		for(String entrypoint : entryMap.keySet()) {
-			AmidstLogger.debug("In entrypoint " + entrypoint + ":");
+			AmidstLogger.debug("Entrypoint " + entrypoint + ":");
 			for (Object entry : entryMap.get(entrypoint)) {
 				AmidstLogger.debug("	Entry " + entry);
 			}
 		}
+	}
+	
+	private static void fakeInitializeEntrypointTransformer(EntrypointTransformer transformer) throws Throwable {
+		Field f1 = EntrypointTransformer.class.getDeclaredField("entrypointsLocated");
+		f1.setAccessible(true);
+		f1.set(transformer, true);
+		
+		Field f2 = EntrypointTransformer.class.getDeclaredField("patchedClasses");
+		f2.setAccessible(true);
+		f2.set(transformer, new HashMap<>());
 	}
 	
 }
