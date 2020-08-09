@@ -18,7 +18,6 @@ import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import amidst.logging.AmidstLogger;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
 import net.fabricmc.loader.entrypoint.EntrypointTransformer;
@@ -36,8 +35,10 @@ public enum FabricSetup {
 	private static final boolean DEVELOPMENT = false;
 	private static final boolean DEBUG_LOGGING = true;
 	private static final boolean COMPATABILITY_CLASSLOADER = false;
-	@SuppressWarnings("unused")
-	private static final String MAPPINGS_NAMESPACE = "official";
+	
+	//TODO: require amidst to be relaunched when loading a new fabric version
+	private static boolean hasBeenRun = false;
+	private static String lastGameVersion = "";
 	
 	public static Object[] initAndGetObjects(URLClassLoader ucl, Path clientJarPath, String... args) throws Throwable {
 		
@@ -92,6 +93,10 @@ public enum FabricSetup {
 			AmidstLogger.error("Unable to add URLs to classpath");
 		}
 		
+		// TODO: Automatically download corret version of mappings before deobf.
+		// We should only do this if there isn't an existing intermediary jar,
+		// so we should check if it exists first before downloading and putting
+		// the mappings jar in the classpath.
 		if (provider.isObfuscated()) {
 			for (Path path : provider.getGameContextJars()) {
 				deobfuscate(
@@ -143,6 +148,8 @@ public enum FabricSetup {
 		//EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
 		//EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
 		//EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
+		
+		hasBeenRun = true;
 		
 		return new Object[] { classLoader, intermediaryJarPath };
 	}
