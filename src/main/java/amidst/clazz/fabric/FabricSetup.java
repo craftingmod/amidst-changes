@@ -1,18 +1,27 @@
 package amidst.clazz.fabric;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
@@ -33,12 +42,12 @@ public enum FabricSetup {
 	;
 	private static final EnvType ENVIRONMENT_TYPE = EnvType.CLIENT;
 	private static final boolean DEVELOPMENT = false;
-	private static final boolean DEBUG_LOGGING = true;
+	private static final boolean DEBUG_LOGGING = false;
 	private static final boolean COMPATABILITY_CLASSLOADER = false;
 	
 	//TODO: require amidst to be relaunched when loading a new fabric version
-	private static boolean hasBeenRun = false;
-	private static String lastGameVersion = "";
+//	private static boolean hasBeenRun = false;
+//	private static String lastGameVersion = "";
 	
 	public static Object[] initAndGetObjects(URLClassLoader ucl, Path clientJarPath, String... args) throws Throwable {
 		
@@ -78,14 +87,21 @@ public enum FabricSetup {
 		
 		setKnotVars(knot, classLoader, DEVELOPMENT, provider);
 		
+		addYarnToClasspath(provider, (URLClassLoader) ClassLoader.getSystemClassLoader(), knot, "-mergedv2.jar");
+		
 		// Merge classloader into new KnotClassLoader
 		try {		    
 			for (URL url : ucl.getURLs()) { // given class loader
 				String urlString = url.toString().toLowerCase();
-				if (!isInSystemClassPath(url) && !urlString.contains("fabric") && !urlString.contains("mixin") && !urlString.contains("asm") && !urlString.contains("log4j")) {
+				if (!isInSystemClassPath(url)
+				 && !urlString.contains("fabric")
+				 && !urlString.contains("mixin")
+				 && !urlString.contains("asm")
+				 && !urlString.contains("log4j")
+				 && !url.sameFile(clientJarPath.toUri().toURL())) {
 					knot.propose(url);
 				} else {
-					AmidstLogger.debug("Rejected URL: " + url);
+					if (DEBUG_LOGGING) AmidstLogger.debug("Rejected URL: " + url);
 				}
 			}
 			
@@ -93,10 +109,6 @@ public enum FabricSetup {
 			AmidstLogger.error("Unable to add URLs to classpath");
 		}
 		
-		// TODO: Automatically download corret version of mappings before deobf.
-		// We should only do this if there isn't an existing intermediary jar,
-		// so we should check if it exists first before downloading and putting
-		// the mappings jar in the classpath.
 		if (provider.isObfuscated()) {
 			for (Path path : provider.getGameContextJars()) {
 				deobfuscate(
@@ -145,11 +157,11 @@ public enum FabricSetup {
 																 // the main Minecraft class and invokes the main, where the main
 																 // entrypoint would have been invoked naturally.
 		
-		//EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
-		//EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
-		//EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
+//		EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
+//		EntrypointUtils.invoke("client", ClientModInitializer.class, ClientModInitializer::onInitializeClient);
+//		EntrypointUtils.invoke("server", DedicatedServerModInitializer.class, DedicatedServerModInitializer::onInitializeServer);
 		
-		hasBeenRun = true;
+//		hasBeenRun = true;
 		
 		return new Object[] { classLoader, intermediaryJarPath };
 	}
@@ -250,6 +262,61 @@ public enum FabricSetup {
 		Field f2 = EntrypointTransformer.class.getDeclaredField("patchedClasses");
 		f2.setAccessible(true);
 		f2.set(transformer, new HashMap<>());
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static void addYarnToClasspath(GameProvider provider, URLClassLoader classLoader, Knot knot, String fileEnding) throws Throwable {
+		Path mappingsDir = provider.getLaunchDirectory().resolve(".fabric" + File.separatorChar + "mappings");
+		String rawGameVersion = provider.getRawGameVersion();
+		
+		int buildVer = 0;
+		Path mappingsFile = null;
+		
+		if(Files.exists(mappingsDir)) {
+			for (Path file : (Iterable<Path>) Files.list(mappingsDir)::iterator) {
+				String fileName = file.getFileName().toString();
+				String fileNameStart = "yarn-" + rawGameVersion + "+build.";
+				if (!Files.isDirectory(file) && fileName.contains(fileNameStart) && fileName.contains(fileEnding)) {
+					int possibleBuildVer = Integer.parseInt(fileName.substring(fileNameStart.length(), fileName.indexOf(fileEnding))); // 12 is the amount of extra characters around the version before the build no.
+					if (possibleBuildVer > buildVer) {
+						buildVer = possibleBuildVer;
+						mappingsFile = file;
+					}
+				}
+			}
+		}
+		
+		if (mappingsFile != null) {
+			if (DEBUG_LOGGING) AmidstLogger.debug("Local yarn mappings found at " + mappingsFile.toAbsolutePath().toString());
+			
+		} else {
+			if (DEBUG_LOGGING) AmidstLogger.debug("No local yarn mappings found. Downloading...");
+			Files.createDirectories(mappingsDir);
+			
+			if (DEBUG_LOGGING) AmidstLogger.debug("Reading mappings build versions for " + rawGameVersion + "...");
+			try (InputStreamReader versionsReader = new InputStreamReader(new URL("https://maven.fabricmc.net/net/fabricmc/yarn/versions.json").openStream())) {
+				JSONObject versionsRoot = (JSONObject) JSONValue.parse(versionsReader);
+				JSONArray buildsArray = (JSONArray) versionsRoot.get(rawGameVersion);
+				buildVer = Collections.max((List<Long>) buildsArray).intValue();
+			}
+			
+			mappingsFile = mappingsDir.resolve("yarn-" + rawGameVersion + "+build." + buildVer + fileEnding);
+			if (DEBUG_LOGGING) AmidstLogger.debug("Downloading yarn mappings " + rawGameVersion + " build " + buildVer + "...");
+			ReadableByteChannel readableByteChannel = Channels.newChannel(new URL("https://maven.fabricmc.net/net/fabricmc/yarn/" + rawGameVersion + "%2Bbuild." + buildVer + "/yarn-" + rawGameVersion + "%2Bbuild." + buildVer + fileEnding).openStream());
+			try (FileOutputStream fileOutputStream = new FileOutputStream(mappingsFile.toAbsolutePath().toString())) {
+				fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+			}
+			
+			if (DEBUG_LOGGING) AmidstLogger.debug("Yarn mappings saved to " + mappingsFile.toAbsolutePath().toString());
+		}
+		
+		URL mappingsURL = mappingsFile.toUri().toURL();
+		Method m1 = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+		m1.setAccessible(true);
+		// add to both the knot class loader and the system class loader
+		m1.invoke(classLoader, mappingsURL);
+		knot.propose(mappingsURL);
+		
 	}
 	
 }

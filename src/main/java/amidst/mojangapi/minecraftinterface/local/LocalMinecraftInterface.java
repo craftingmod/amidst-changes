@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
+import javax.swing.JOptionPane;
+
 import amidst.clazz.symbolic.SymbolicClass;
 import amidst.clazz.symbolic.SymbolicObject;
 import amidst.logging.AmidstLogger;
@@ -137,6 +139,8 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 			return "largeBiomes";
 		case CUSTOMIZED:
 			return "customized";
+		case CUSTOM:
+			return JOptionPane.showInputDialog(null, "Enter the world type:", "World Type", JOptionPane.QUESTION_MESSAGE);
 		default:
 			AmidstLogger.warn("Unsupported world type for this version: " + worldType);
 			return "";
@@ -163,11 +167,7 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 
 	    	stopAllExecutors();
 	    	
-	    	try {
-	    		EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
-	    	} catch(Throwable t) {
-	    		AmidstLogger.error("Something with fabric probably crashed, but we may be able to continue anyway.");
-	    	}
+	    	EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
 
             biomeRegistry = Objects.requireNonNull(getFromRegistryByKey(metaRegistry, "biome"));
 

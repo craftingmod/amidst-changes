@@ -138,6 +138,12 @@
 				<scope>provided</scope>
 				<type>maven-plugin</type>
 			</dependency>
+			<dependency>
+				<groupId>com.googlecode.json-simple</groupId>
+				<artifactId>json-simple</artifactId>
+				<version>1.1.1</version>
+				<scope>runtime</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
@@ -172,12 +178,12 @@
 			<scope>provided</scope>
 			<type>maven-plugin</type>
 		</dependency>
-		<!--FABRIC/MIXIN DEPENDENCIES START-->
 		<dependency>
-			<groupId>net.fabricmc</groupId>
-			<artifactId>yarn</artifactId>
-			<version>1.16.1+build.1</version>
+			<groupId>com.googlecode.json-simple</groupId>
+			<artifactId>json-simple</artifactId>
+			<scope>compile</scope>
 		</dependency>
+		<!--FABRIC/MIXIN DEPENDENCIES START-->
 		<dependency>
 			<groupId>net.fabricmc</groupId>
 			<artifactId>fabric-loader</artifactId>
