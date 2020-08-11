@@ -139,7 +139,8 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 		case CUSTOMIZED:
 			return "customized";
 		case CUSTOM:
-			return JOptionPane.showInputDialog(null, "Enter the world type:", "World Type", JOptionPane.QUESTION_MESSAGE);
+			String s = JOptionPane.showInputDialog(null, "Enter the world type:", "World Type", JOptionPane.QUESTION_MESSAGE);
+			return s != null ? s : getTrueWorldTypeName(WorldType.DEFAULT);
 		default:
 			AmidstLogger.warn("Unsupported world type for this version: " + worldType);
 			return "";
