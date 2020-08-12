@@ -213,10 +213,6 @@ public class SymbolicClassBuilder {
 
 	private SymbolicClass getType(Class<?> type) {
 		String result = type.getName();
-		if (result.contains(".")) {
-			String[] typeSplit = result.split("\\.");
-			result = typeSplit[typeSplit.length - 1];
-		}
 		return symbolicClassesByRealClassName.get(result);
 	}
 

@@ -164,6 +164,7 @@ public class LocalMinecraftInterface implements MinecraftInterface {
             if(RecognisedVersion.isNewerOrEqualTo(recognisedVersion, RecognisedVersion._1_16_2)) {
             	defaultDynamicRegistry = dynamicRegistryManagerClass.getMethod(SymbolicNames.METHOD_DYNAMIC_REGISTRY_MANAGER_CREATE).getRawMethod().invoke(null);
             	biomeRegistry = Objects.requireNonNull(getFromRegistryByKey(defaultDynamicRegistry, "worldgen/biome", true));
+            	registryGetIdMethod = getMethodHandle(registryClass, SymbolicNames.METHOD_REGISTRY_GET_ID2);
             	
             } else {
     	    	Object metaRegistry = registryClass.getStaticFieldValue(SymbolicNames.FIELD_REGISTRY_META_REGISTRY);
@@ -175,14 +176,14 @@ public class LocalMinecraftInterface implements MinecraftInterface {
     	    	metaRegistry = ((SymbolicObject) metaRegistry).getObject();
     	    	
 				biomeRegistry = Objects.requireNonNull(getFromRegistryByKey(metaRegistry, "biome", false));
+				registryGetIdMethod = getMethodHandle(registryClass, SymbolicNames.METHOD_REGISTRY_GET_ID);
 				
             }
             
 	    	stopAllExecutors();
 	    	
 	    	EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
-
-            registryGetIdMethod = getMethodHandle(registryClass, SymbolicNames.METHOD_REGISTRY_GET_ID);
+	    	
             biomeProviderGetBiomeMethod = getMethodHandle(noiseBiomeProviderClass, SymbolicNames.METHOD_NOISE_BIOME_PROVIDER_GET_BIOME);
             biomeZoomerGetBiomeMethod = getMethodHandle(overworldBiomeZoomerClass, SymbolicNames.METHOD_BIOME_ZOOMER_GET_BIOME);
         } catch(IllegalArgumentException | IllegalAccessException | InstantiationException
@@ -268,23 +269,10 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 			    		return biomeDataMapper.apply(data);
 			    	}
 
-			        /**
-			         * We break the region in 16x16 chunks, to get better performance out
-			         * of the LazyArea used by the game. This gives a ~2x improvement.
-		             */
-		            int chunkSize = 16;
-		            for (int x0 = 0; x0 < width; x0 += chunkSize) {
-		                int w = Math.min(chunkSize, width - x0);
-
-		                for (int y0 = 0; y0 < height; y0 += chunkSize) {
-		                    int h = Math.min(chunkSize, height - y0);
-
-		                    for (int i = 0; i < w; i++) {
-		                        for (int j = 0; j < h; j++) {
-		                            int trueIdx = (x0 + i) + (y0 + j) * width;
-		                            data[trueIdx] = getBiomeIdAt(x + x0 + i, y + y0 + j, useQuarterResolution);
-		                        }
-		                    }
+		    	    for (int i = 0; i < width; i++) {
+		                for (int j = 0; j < height; j++) {
+		                    int idx = i + j * width;
+		                    data[idx] = getBiomeIdAt(x + i, y + j, useQuarterResolution);
 		                }
 		            }
 			    } catch (Throwable e) {

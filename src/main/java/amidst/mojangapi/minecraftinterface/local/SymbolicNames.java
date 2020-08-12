@@ -13,6 +13,7 @@ public enum SymbolicNames {
     public static final String METHOD_REGISTRY_CREATE_KEY = "createRegistryKey";
     public static final String METHOD_REGISTRY_GET_BY_KEY = "getByKey";
     public static final String METHOD_REGISTRY_GET_ID = "getId";
+    public static final String METHOD_REGISTRY_GET_ID2 = "getId2";
 
     public static final String CLASS_RESOURCE_KEY = "ResourceKey";
     public static final String CONSTRUCTOR_RESOURCE_KEY = "<init>";

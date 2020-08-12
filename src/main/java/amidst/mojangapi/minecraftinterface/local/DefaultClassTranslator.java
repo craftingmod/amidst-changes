@@ -41,7 +41,8 @@ public enum DefaultClassTranslator {
                     .requiredField(FIELD_REGISTRY_META_REGISTRY2, "field_11144")
                     .requiredField(FIELD_REGISTRY_META_REGISTRY3, "field_11144")
                 	.optionalMethod(METHOD_REGISTRY_CREATE_KEY, "method_29106").real("java.lang.String").end()
-                    .requiredMethod(METHOD_REGISTRY_GET_ID, "method_10249").real("java.lang.Object").end()
+                    .optionalMethod(METHOD_REGISTRY_GET_ID, "method_10249").real("java.lang.Object").end()
+                    .optionalMethod(METHOD_REGISTRY_GET_ID2, "method_10206").real("java.lang.Object").end()
                     .requiredMethod(METHOD_REGISTRY_GET_BY_KEY, "method_29107").symbolic(CLASS_RESOURCE_KEY).end()
             .next()
             	.ifDetect(c ->
@@ -69,6 +70,7 @@ public enum DefaultClassTranslator {
                     && c.getNumberOfMethods() == 1
                     && c.hasMethodWithRealArgsReturning("int", "int", "int", null)
                     && !c.hasMethodWithRealArgsReturning("int", "int", "int", "boolean")
+                    && !c.searchForUtf8EqualTo("fetch")
                 )
                 .thenDeclareRequired(CLASS_NOISE_BIOME_PROVIDER)
                     .requiredMethod(METHOD_NOISE_BIOME_PROVIDER_GET_BIOME, "method_16359").real("int").real("int").real("int").end()
