@@ -177,6 +177,8 @@ public class LocalMinecraftInterface implements MinecraftInterface {
             }
             
 	    	stopAllExecutors();
+	    	
+	    	EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
 
             registryGetIdMethod = getMethodHandle(registryClass, SymbolicNames.METHOD_REGISTRY_GET_ID);
             biomeProviderGetBiomeMethod = getMethodHandle(noiseBiomeProviderClass, SymbolicNames.METHOD_NOISE_BIOME_PROVIDER_GET_BIOME);
