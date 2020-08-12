@@ -24,6 +24,8 @@ import amidst.mojangapi.minecraftinterface.MinecraftInterfaceException;
 import amidst.mojangapi.minecraftinterface.RecognisedVersion;
 import amidst.mojangapi.world.WorldType;
 import amidst.util.ArrayCache;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.entrypoint.minecraft.hooks.EntrypointUtils;
 
 public class LocalMinecraftInterface implements MinecraftInterface {
 
