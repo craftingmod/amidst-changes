@@ -19,10 +19,10 @@ public enum DefaultClassTranslator {
         return ClassTranslator
             .builder()
                 .ifDetect(c -> c.getNumberOfConstructors() == 3
-                        && (c.getNumberOfFields() == 3 || c.getNumberOfFields() == 4)
-                        && c.getField(0).hasFlags(AccessFlags.STATIC | AccessFlags.FINAL)
-                        && c.searchForUtf8EqualTo("minecraft")
-                        && c.searchForUtf8EqualTo("argument.id.invalid")
+                    && (c.getNumberOfFields() == 3 || c.getNumberOfFields() == 4)
+                    && c.getField(0).hasFlags(AccessFlags.STATIC | AccessFlags.FINAL)
+                    && c.searchForUtf8EqualTo("minecraft")
+                    && c.searchForUtf8EqualTo("argument.id.invalid")
                 )
                 .thenDeclareRequired(CLASS_RESOURCE_KEY)
                     .requiredConstructor(CONSTRUCTOR_RESOURCE_KEY).real("java.lang.String").end()
@@ -31,20 +31,18 @@ public enum DefaultClassTranslator {
             	.thenDeclareOptional(CLASS_REGISTRY_ACCESS_KEY) // since 20w21a
             .next()
                 .ifDetect(c -> c.getNumberOfConstructors() <= 1
-                    && c.getNumberOfFields() > 15
-                    && c.searchForUtf8EqualTo("block")
-                    && c.searchForUtf8EqualTo("potion")
-                    && c.searchForUtf8EqualTo("dimension")
-                    && c.searchForUtf8EqualTo("item")
+					&& c.getNumberOfFields() > 15
+					&& c.searchForUtf8EqualTo("block")
+					&& c.searchForUtf8EqualTo("potion")
+					&& (c.searchForUtf8EqualTo("biome") || c.searchForUtf8EqualTo("worldgen/biome"))
+					&& c.searchForUtf8EqualTo("item")
                 )
                 .thenDeclareRequired(CLASS_REGISTRY)
                     .requiredField(FIELD_REGISTRY_META_REGISTRY, "field_11144")
-                    .requiredField(FIELD_REGISTRY_META_REGISTRY2, "field_11144")
-                    .requiredField(FIELD_REGISTRY_META_REGISTRY3, "field_11144")
                 	.optionalMethod(METHOD_REGISTRY_CREATE_KEY, "method_29106").real("java.lang.String").end()
                     .optionalMethod(METHOD_REGISTRY_GET_ID, "method_10249").real("java.lang.Object").end()
                     .optionalMethod(METHOD_REGISTRY_GET_ID2, "method_10206").real("java.lang.Object").end()
-                    .requiredMethod(METHOD_REGISTRY_GET_BY_KEY, "method_29107").symbolic(CLASS_RESOURCE_KEY).end()
+                    .requiredMethod(METHOD_REGISTRY_GET_BY_KEY, "method_10223").symbolic(CLASS_RESOURCE_KEY).end()
             .next()
                 .ifDetect(c -> c.searchForUtf8EqualTo("Missing builtin registry: ")) // since 20w28a
                 .thenDeclareOptional(CLASS_REGISTRY_ACCESS)
@@ -59,10 +57,10 @@ public enum DefaultClassTranslator {
                     .optionalMethod(METHOD_WORLD_GEN_SETTINGS_CREATE2, "method_28021").symbolic(CLASS_REGISTRY_ACCESS).real("java.util.Properties").end()
             .next()
                 .ifDetect(c -> c.getNumberOfFields() == 7
-                		&& c.searchForUtf8EqualTo("overworld")
-                		&& c.searchForUtf8EqualTo("the_nether")
-                		&& c.searchForUtf8EqualTo("the_end")
-                		&& c.searchForUtf8EqualTo("generator"))
+            		&& c.searchForUtf8EqualTo("overworld")
+            		&& c.searchForUtf8EqualTo("the_nether")
+            		&& c.searchForUtf8EqualTo("the_end")
+            		&& c.searchForUtf8EqualTo("generator"))
                 .thenDeclareOptional(CLASS_DIMENSION_SETTINGS)
                 	.requiredField(FIELD_DIMENSION_SETTINGS_GENERATOR, "field_25417")
             .next()

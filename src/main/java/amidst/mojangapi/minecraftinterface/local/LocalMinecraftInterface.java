@@ -29,6 +29,8 @@ import amidst.mojangapi.minecraftinterface.UnsupportedDimensionException;
 import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.WorldType;
 import amidst.util.ArrayCache;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.entrypoint.minecraft.hooks.EntrypointUtils;
 
 public class LocalMinecraftInterface implements MinecraftInterface {
 
@@ -191,6 +193,8 @@ public class LocalMinecraftInterface implements MinecraftInterface {
         	if (registryAccessClass == null) {
         		registryAccess = null;
         		biomeRegistry = getLegacyBiomeRegistry();
+        		
+        		registryGetIdMethod = getMethodHandle(registryClass, SymbolicNames.METHOD_REGISTRY_GET_ID);
         	} else {
         		Object key = ((SymbolicObject) registryClass
     	    			.callStaticMethod(SymbolicNames.METHOD_REGISTRY_CREATE_KEY, "worldgen/biome"))
@@ -201,11 +205,14 @@ public class LocalMinecraftInterface implements MinecraftInterface {
         		biomeRegistry = registryAccessClass.getMethod(SymbolicNames.METHOD_REGISTRY_ACCESS_GET_REGISTRY)
         			.getRawMethod().invoke(registryAccess, key);
         		biomeRegistry = Objects.requireNonNull(biomeRegistry);
+        		
+        		registryGetIdMethod = getMethodHandle(registryClass, SymbolicNames.METHOD_REGISTRY_GET_ID2);
         	}
 
         	stopAllExecutors();
 
-            registryGetIdMethod = getMethodHandle(registryClass, SymbolicNames.METHOD_REGISTRY_GET_ID);
+        	EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
+
             biomeProviderGetBiomeMethod = getMethodHandle(noiseBiomeProviderClass, SymbolicNames.METHOD_NOISE_BIOME_PROVIDER_GET_BIOME);
             biomeZoomerGetBiomeMethod = getMethodHandle(biomeZoomerClass, SymbolicNames.METHOD_BIOME_ZOOMER_GET_BIOME);
 
@@ -222,15 +229,8 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 	private Object getLegacyBiomeRegistry() throws IllegalArgumentException, IllegalAccessException,
     	InstantiationException, InvocationTargetException, MinecraftInterfaceException {
     	Object metaRegistry = registryClass.getStaticFieldValue(SymbolicNames.FIELD_REGISTRY_META_REGISTRY);
-    	if (!(metaRegistry instanceof SymbolicObject && ((SymbolicObject) metaRegistry).getType().equals(registryClass))) {
-    		// Oops, we called the wrong method
-    		String name = RecognisedVersion.isOlder(recognisedVersion, RecognisedVersion._1_16_pre1) ?
-    				SymbolicNames.FIELD_REGISTRY_META_REGISTRY2 : SymbolicNames.FIELD_REGISTRY_META_REGISTRY3;
-        	metaRegistry = registryClass.getStaticFieldValue(name);
-        }
 
-        return ((SymbolicObject) metaRegistry).callMethod(
-            SymbolicNames.METHOD_REGISTRY_GET_BY_KEY, createResourceKey("biome"));
+        return ((SymbolicObject) metaRegistry).callMethod(SymbolicNames.METHOD_REGISTRY_GET_BY_KEY, createResourceKey("biome"));
     }
 
 	private void stopAllExecutors() throws IllegalArgumentException, IllegalAccessException {
