@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.channels.Channels;
@@ -16,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -26,6 +28,7 @@ import org.spongepowered.asm.launch.MixinBootstrap;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import amidst.logging.AmidstLogger;
+import io.github.classgraph.ClassGraph;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.FabricLoader;
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint;
@@ -41,8 +44,8 @@ import net.fabricmc.loader.launch.knot.Knot;
 public enum FabricSetup {
 	;
 	private static final EnvType ENVIRONMENT_TYPE = EnvType.CLIENT;
-	private static final boolean DEVELOPMENT = false;
-	private static final boolean DEBUG_LOGGING = false;
+	private static final boolean DEVELOPMENT = false; // if this is set to true then all normally compiled mods break
+	private static final boolean DEBUG_LOGGING = Boolean.getBoolean("amidst.fabric.debug");
 	private static final boolean COMPATABILITY_CLASSLOADER = false;
 	
 	//TODO: require amidst to be relaunched when loading a new fabric version
@@ -83,17 +86,22 @@ public enum FabricSetup {
 		
 		setProperties(new HashMap<>());
 		
-		Knot knot = createKnotInstance(ENVIRONMENT_TYPE, clientJarPath.toFile()); // DON'T CALL INIT ON THIS!!!
+		// DON'T CALL INIT ON THIS!!!
+		// We're basically replicating what init does anyway, we just happen
+		// to need an instance of a Knot object. If init gets called this will
+		// probably crash.
+		Knot knot = createKnotInstance(ENVIRONMENT_TYPE, clientJarPath.toFile());
 		
 		setKnotVars(knot, classLoader, DEVELOPMENT, provider);
 		
-		addYarnToClasspath(provider, (URLClassLoader) ClassLoader.getSystemClassLoader(), knot, "-mergedv2.jar");
+		// Get all of the classes in the system classloader to check against
+		URL[] systemClassPath = getSystemClasspathUrls();
 		
-		// Merge classloader into new KnotClassLoader
+		// Merge given classloader into new KnotClassLoader
 		try {		    
 			for (URL url : ucl.getURLs()) { // given class loader
 				String urlString = url.toString().toLowerCase();
-				if (!isInSystemClassPath(url)
+				if (!hasMatchingUrl(url, systemClassPath)
 				 && !urlString.contains("fabric")
 				 && !urlString.contains("mixin")
 				 && !urlString.contains("asm")
@@ -109,6 +117,8 @@ public enum FabricSetup {
 			AmidstLogger.error("Unable to add URLs to classpath");
 		}
 		
+		addYarnToClasspath(provider, knot, "-mergedv2.jar");
+		
 		if (provider.isObfuscated()) {
 			for (Path path : provider.getGameContextJars()) {
 				deobfuscate(
@@ -123,12 +133,20 @@ public enum FabricSetup {
 		
 		Path intermediaryJarPath = provider.getLaunchDirectory().resolve(".fabric" + File.separatorChar + "remappedJars" + File.separatorChar + provider.getGameId() + "-" + provider.getRawGameVersion() + File.separatorChar + knot.getTargetNamespace() + "-" + provider.getRawGameVersion() + ".jar").toAbsolutePath();
 		
-		// Locate entrypoints before switching class loaders
+		// FABRIC DOC: Locate entrypoints before switching class loaders
+		// Read documentation at the setContextClassLoader() for more info as to why
+		// this isn't exactly true.
+		
+		// Because we're always going to be manually invoking the entrypoints anyway,
+		// it makes sense to disable the modification of classes as it removes the
+		// possibility of faliure in that aspect. This may break some mods that require
+		// janky entrypoints.
+		
 		fakeInitializeEntrypointTransformer(provider.getEntrypointTransformer());
 //		provider.getEntrypointTransformer().locateEntrypoints(knot);
 		
 		// This doesn't actually switch the classloader, this only does something if
-		// getContextClassLoader() gets called on the same thread somewhere else
+		// getContextClassLoader() gets called on the same thread somewhere else.
 		Thread.currentThread().setContextClassLoader(classLoader);
 		
 		@SuppressWarnings("deprecation")
@@ -225,8 +243,20 @@ public enum FabricSetup {
 		loader.loadClass(targetClass);
 	}
 	
-	private static boolean isInSystemClassPath(URL url) {
-		for (URL classpathUrl : ((URLClassLoader) ClassLoader.getSystemClassLoader()).getURLs()) {
+	// We use ClassGraph instead of just converting the system classloader to a
+	// URLClassLoader and calling getUrls because that doesn't work past Java 8.
+	private static URL[] getSystemClasspathUrls() {
+		return new ClassGraph().getClasspathURIs().stream().map(uri -> {
+			try {
+				return uri.toURL();
+			} catch (MalformedURLException e) {
+				return null;
+			}
+		}).toArray(size -> new URL[size]);
+	}
+	
+	private static boolean hasMatchingUrl(URL url, URL[] array) throws Throwable {
+		for (URL classpathUrl : array) {
 			if (classpathUrl.sameFile(url)) {
 				return true;
 			}
@@ -265,7 +295,7 @@ public enum FabricSetup {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static void addYarnToClasspath(GameProvider provider, URLClassLoader classLoader, Knot knot, String fileEnding) throws Throwable {
+	private static void addYarnToClasspath(GameProvider provider, Knot knot, String fileEnding) throws Throwable {
 		Path mappingsDir = provider.getLaunchDirectory().resolve(".fabric" + File.separatorChar + "mappings");
 		String rawGameVersion = provider.getRawGameVersion();
 		
@@ -311,10 +341,23 @@ public enum FabricSetup {
 		}
 		
 		URL mappingsURL = mappingsFile.toUri().toURL();
-		Method m1 = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-		m1.setAccessible(true);
-		// add to both the knot class loader and the system class loader
-		m1.invoke(classLoader, mappingsURL);
+		
+		ClassLoader systemLoader = ClassLoader.getSystemClassLoader();
+		try {
+			// Try using Java 8 method for adding to system classloader
+			URLClassLoader urlSystemLoader = (URLClassLoader) systemLoader;
+			Method m1 = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+			m1.setAccessible(true);
+			m1.invoke(urlSystemLoader, mappingsURL);
+		} catch (Throwable t) {
+			// If that didn't work, use different method for newer Java versions
+			Class<?> systemLoaderClass = Class.forName("jdk.internal.loader.ClassLoaders$AppClassLoader");
+			Method m1 = systemLoaderClass.getDeclaredMethod("appendToClassPathForInstrumentation", String.class);
+			m1.setAccessible(true);
+			m1.invoke(ClassLoader.getSystemClassLoader(), mappingsFile.toAbsolutePath().toString());
+		}
+		
+		// Add to knot class loader
 		knot.propose(mappingsURL);
 		
 	}
