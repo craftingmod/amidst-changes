@@ -17,7 +17,7 @@ public class EndCityWorldIconTypeProvider implements WorldIconTypeProvider<List<
 
 	@Override
 	public DefaultWorldIconTypes get(int chunkX, int chunkY, List<LargeEndIsland> largeEndIslands) {
-		if ((chunkX * chunkX + chunkY * chunkY) > 4096) {
+		if (((long)chunkX * chunkX + (long)chunkY * chunkY) > 4096) {
 			return hasSuitableIslandFoundation(chunkX, chunkY, largeEndIslands);
 		} else {
 			return null;
