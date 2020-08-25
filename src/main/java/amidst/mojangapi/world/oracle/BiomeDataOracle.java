@@ -42,9 +42,9 @@ public class BiomeDataOracle {
 		this.accurateLocationCount = config.accurateLocationCount;
 	}
 
-	public void getBiomeData(CoordinatesInWorld corner, int width, int height, boolean useQuarterResolution,
+	public void getBiomeData(CoordinatesInWorld corner, Dimension dimension, int width, int height, boolean useQuarterResolution,
 			Consumer<int[]> biomeDataConsumer) {
-		getBiomeData(corner, width, height, useQuarterResolution, data -> {
+		getBiomeData(corner, dimension, width, height, useQuarterResolution, data -> {
 			biomeDataConsumer.accept(data);
 			return null;
 		}, () -> null);
@@ -52,11 +52,12 @@ public class BiomeDataOracle {
 
 	// Pass biome data to the mapper as a row-major int array; or return the default value if an error occured.
 	// width and height represent the number of samples, NOT the size of the region in the world.
-	public<T> T getBiomeData(CoordinatesInWorld corner, int width, int height, boolean useQuarterResolution,
+	public<T> T getBiomeData(CoordinatesInWorld corner, Dimension dimension, int width, int height, boolean useQuarterResolution,
 			Function<int[], T> biomeDataMapper, Supplier<T> defaultValue) {
 		Resolution resolution = Resolution.from(useQuarterResolution);
 		int left = (int) corner.getXAs(resolution);
 		int top = (int) corner.getYAs(resolution);
+		AmidstLogger.info("Dimension: " + dimension.getDisplayName());
 		try {
 			return minecraftWorld.getBiomeData(dimension, left, top, width, height, useQuarterResolution, biomeDataMapper);
 		} catch (MinecraftInterfaceException e) {

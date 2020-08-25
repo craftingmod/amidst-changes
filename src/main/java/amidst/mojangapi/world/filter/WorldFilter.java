@@ -2,6 +2,7 @@ package amidst.mojangapi.world.filter;
 
 import amidst.documentation.Immutable;
 import amidst.fragment.Fragment;
+import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.World;
 import amidst.mojangapi.world.coordinates.CoordinatesInWorld;
 import amidst.mojangapi.world.coordinates.Resolution;
@@ -30,5 +31,5 @@ public abstract class WorldFilter {
 		}
 	}
 
-	public abstract boolean isValid(World world);
+	public abstract boolean isValid(World world, Dimension dimen);
 }

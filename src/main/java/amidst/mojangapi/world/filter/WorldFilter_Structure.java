@@ -1,6 +1,7 @@
 package amidst.mojangapi.world.filter;
 
 import amidst.documentation.Immutable;
+import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.World;
 import amidst.mojangapi.world.coordinates.CoordinatesInWorld;
 import amidst.mojangapi.world.icon.producer.NameFilteredWorldIconCollector;
@@ -20,7 +21,7 @@ public class WorldFilter_Structure extends WorldFilter {
 	}
 
 	@Override
-	public boolean isValid(World world) {
+	public boolean isValid(World world, Dimension dimen) {
 		WorldIconCollector structureCollector = getCollector();
 		procudeAndCollect(getProducer(world), structureCollector);
 		return structureCollector.get().size() > count;

@@ -11,6 +11,7 @@ import amidst.documentation.CalledByAny;
 import amidst.documentation.CalledOnlyBy;
 import amidst.documentation.ThreadSafe;
 import amidst.gui.main.viewer.Drawer;
+import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.coordinates.CoordinatesInWorld;
 import amidst.mojangapi.world.coordinates.Resolution;
 import amidst.mojangapi.world.icon.WorldIcon;
@@ -122,10 +123,10 @@ public class Fragment {
 	}
 
 	@CalledOnlyBy(AmidstThread.FRAGMENT_LOADER)
-	public void populateBiomeData(BiomeDataOracle biomeDataOracle) {
+	public void populateBiomeData(BiomeDataOracle biomeDataOracle, Dimension dimension) {
 		int width = biomeData.length;
 		int height = width == 0 ? 0 : biomeData[0].length;
-		biomeDataOracle.getBiomeData(corner, width, height, true, data -> {
+		biomeDataOracle.getBiomeData(corner, dimension, width, height, true, data -> {
 			for (int i = 0; i < width; i++) {
 				for (int j = 0; j < height; j++) {
 					biomeData[i][j] = (short) data[j * width + i];

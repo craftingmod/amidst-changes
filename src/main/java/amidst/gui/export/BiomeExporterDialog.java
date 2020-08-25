@@ -1,14 +1,5 @@
 package amidst.gui.export;
 
-import static java.awt.GridBagConstraints.BOTH;
-import static java.awt.GridBagConstraints.CENTER;
-import static java.awt.GridBagConstraints.EAST;
-import static java.awt.GridBagConstraints.HORIZONTAL;
-import static java.awt.GridBagConstraints.NONE;
-import static java.awt.GridBagConstraints.SOUTH;
-import static java.awt.GridBagConstraints.SOUTHEAST;
-import static java.awt.GridBagConstraints.SOUTHWEST;
-
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
@@ -38,19 +29,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.border.LineBorder;
 
 import amidst.Amidst;
@@ -63,6 +42,7 @@ import amidst.gui.main.viewer.widget.ProgressWidget.ProgressEntryType;
 import amidst.logging.AmidstLogger;
 import amidst.logging.AmidstMessageBox;
 import amidst.mojangapi.minecraftinterface.MinecraftInterfaceException;
+import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.World;
 import amidst.mojangapi.world.WorldOptions;
 import amidst.mojangapi.world.biome.Biome;
@@ -71,6 +51,8 @@ import amidst.mojangapi.world.coordinates.CoordinatesInWorld;
 import amidst.mojangapi.world.oracle.BiomeDataOracle;
 import amidst.settings.Setting;
 import amidst.settings.biomeprofile.BiomeProfileSelection;
+
+import static java.awt.GridBagConstraints.*;
 
 @NotThreadSafe
 public class BiomeExporterDialog {
@@ -93,6 +75,7 @@ public class BiomeExporterDialog {
 	private final ImageIcon previewIcon;
 	private final JLabel previewLabel;
 	private final JDialog dialog;
+	private final JComboBox<String> dimensionSelection;
 
 	private WorldOptions worldOptions;
 	private BiomeDataOracle biomeDataOracle;
@@ -115,6 +98,7 @@ public class BiomeExporterDialog {
 		this.bottomSpinner         = createCoordinateSpinner();
 		this.fullResCheckBox       = createFullResCheckbox();
 		this.pathField             = createPathField();
+		this.dimensionSelection    = new JComboBox<String>(new String[] {"Overworld", "The nether"});
 		this.browseButton          = createBrowseButton();
 		this.exportButton          = createExportButton();
 		this.previewImage          = new BufferedImage(PREVIEW_SIZE, PREVIEW_SIZE, BufferedImage.TYPE_INT_ARGB);
@@ -155,6 +139,7 @@ public class BiomeExporterDialog {
 	}
 
 	private JButton createExportButton() {
+		Dimension dimen = new Dimension[] {Dimension.OVERWORLD, Dimension.NETHER}[dimensionSelection.getSelectedIndex()];
 		JButton exportButton = new JButton("Export");
 		exportButton.addActionListener((e) -> {
 			try {
@@ -173,6 +158,7 @@ public class BiomeExporterDialog {
 				lastBiomeExportPath.set(path.toAbsolutePath().getParent().toString());
 				biomeExporter.export(
 						biomeDataOracle,
+						dimen,
 						new BiomeExporterConfiguration(
 								path,
 								!fullResCheckBox.isSelected(),
@@ -307,6 +293,11 @@ public class BiomeExporterDialog {
 
 		setConstraints(0, 10, 0, 0, HORIZONTAL, 1, 0, 1, 1, 0.0, 0.0, SOUTH);
 		pathPanel.add(browseButton, constraints);
+
+		// @TODO beauty select..
+		dimensionSelection.setSelectedIndex(0);
+		setConstraints(0, 10, 0, 0, HORIZONTAL, 2, 0, 1, 1, 0.0, 0.0, NORTH);
+		pathPanel.add(dimensionSelection, constraints);
 
 		setConstraints(10, 20, 20, 10, BOTH, 0, 6, 4, 2, 0.0, 0.0, SOUTHWEST);
 		panel.add(pathPanel, constraints);

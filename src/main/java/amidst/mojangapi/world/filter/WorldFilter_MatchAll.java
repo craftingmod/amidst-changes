@@ -3,6 +3,7 @@ package amidst.mojangapi.world.filter;
 import java.util.List;
 
 import amidst.documentation.Immutable;
+import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.World;
 
 @Immutable
@@ -15,9 +16,9 @@ public class WorldFilter_MatchAll extends WorldFilter {
 	}
 
 	@Override
-	public boolean isValid(World world) {
+	public boolean isValid(World world, Dimension dimen) {
 		for (WorldFilter filter : filters) {
-			if (!filter.isValid(world)) {
+			if (!filter.isValid(world, dimen)) {
 				return false;
 			}
 		}

@@ -80,7 +80,7 @@ public class LayerBuilder {
 		LayerDeclaration[] declarations = new LayerDeclaration[LayerIds.NUMBER_OF_LAYERS];
 		// @formatter:off
 		declare(settings, declarations, enabledLayers, LayerIds.ALPHA,           null,                false, Setting.createImmutable(true));
-		declare(settings, declarations, enabledLayers, LayerIds.BIOME_DATA,      Dimension.OVERWORLD, false, Setting.createImmutable(true));
+		declare(settings, declarations, enabledLayers, LayerIds.BIOME_DATA,      null, false, Setting.createImmutable(true));
 		declare(settings, declarations, enabledLayers, LayerIds.END_ISLANDS,     Dimension.END,       false, Setting.createImmutable(true));
 		declare(settings, declarations, enabledLayers, LayerIds.BACKGROUND,      null,                false, Setting.createImmutable(true));
 		declare(settings, declarations, enabledLayers, LayerIds.SLIME,           Dimension.OVERWORLD, false, settings.showSlimeChunks);
@@ -129,7 +129,7 @@ public class LayerBuilder {
 		// @formatter:off
 		return Collections.unmodifiableList(Arrays.asList(
 				new AlphaInitializer( declarations.get(LayerIds.ALPHA),           settings.fragmentFading),
-				new BiomeDataLoader(  declarations.get(LayerIds.BIOME_DATA),      world.getOverworldBiomeDataOracle()),
+				new BiomeDataLoader(  declarations.get(LayerIds.BIOME_DATA),      world.getOverworldBiomeDataOracle(), world.getNetherBiomeDataOracle()),
 				new EndIslandsLoader( declarations.get(LayerIds.END_ISLANDS),     world.getEndIslandOracle()),
 				new ImageLoader(	  declarations.get(LayerIds.BACKGROUND),      Resolution.QUARTER, new BackgroundColorProvider(new BiomeColorProvider(biomeSelection, settings.biomeProfileSelection), new NetherColorProvider(biomeSelection, settings.biomeProfileSelection), new TheEndColorProvider())),
 				new ImageLoader(      declarations.get(LayerIds.SLIME),           Resolution.CHUNK,   new SlimeColorProvider(world.getSlimeChunkOracle())),

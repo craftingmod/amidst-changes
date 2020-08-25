@@ -10,6 +10,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import amidst.AmidstSettings;
+import amidst.FeatureToggles;
 import amidst.ResourceLoader;
 import amidst.documentation.AmidstThread;
 import amidst.documentation.CalledOnlyBy;
@@ -67,7 +68,7 @@ public class LayersMenu {
 		Menus.radio(menu, dimensionSetting, group, Dimension.OVERWORLD, MenuShortcuts.DISPLAY_DIMENSION_OVERWORLD);
 		createOverworldLayers(dimension);
 		// Nether Menu
-		if (settings.enableNether.get()) {
+		if (FeatureToggles.SUPPORT_NETHER) {
 			menu.addSeparator();
 			Menus.radio(menu, dimensionSetting, group, Dimension.NETHER, MenuShortcuts.DISPLAY_DIMENSION_NETHER);
 			createNetherLayers(dimension);

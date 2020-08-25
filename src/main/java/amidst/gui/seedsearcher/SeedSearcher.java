@@ -9,6 +9,7 @@ import amidst.gui.main.MainWindowDialogs;
 import amidst.logging.AmidstLogger;
 import amidst.mojangapi.RunningLauncherProfile;
 import amidst.mojangapi.minecraftinterface.MinecraftInterfaceException;
+import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.World;
 import amidst.mojangapi.world.WorldOptions;
 import amidst.mojangapi.world.WorldSeed;
@@ -96,7 +97,8 @@ public class SeedSearcher {
 		while (!isStopRequested) {
 			WorldOptions worldOptions = new WorldOptions(WorldSeed.random(), configuration.getWorldType());
 			World world = runningLauncherProfile.createWorld(worldOptions);
-			if (configuration.getWorldFilter().isValid(world)) {
+			// I won't support sead searcher lol
+			if (configuration.getWorldFilter().isValid(world, Dimension.OVERWORLD)) {
 				reporter.report(worldOptions);
 				break;
 			}

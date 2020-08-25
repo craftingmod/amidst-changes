@@ -33,6 +33,7 @@ import amidst.gui.main.menu.AmidstMenu;
 import amidst.gui.main.viewer.widget.ProgressWidget.ProgressEntryType;
 import amidst.logging.AmidstLogger;
 import amidst.logging.AmidstMessageBox;
+import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.coordinates.CoordinatesInWorld;
 import amidst.mojangapi.world.coordinates.Resolution;
 import amidst.mojangapi.world.oracle.BiomeDataOracle;
@@ -52,6 +53,7 @@ public class BiomeExporter {
 
 	@CalledOnlyBy(AmidstThread.EDT)
 	public void export(BiomeDataOracle biomeDataOracle,
+			Dimension dimension,
 			BiomeExporterConfiguration configuration,
 			Consumer<Entry<ProgressEntryType, Integer>> progressListener,
 			AmidstMenu menuBar) {
@@ -68,7 +70,7 @@ public class BiomeExporter {
 				});
 				ACTIVE_THREADS.incrementAndGet();
 				try {
-					this.doExport(biomeDataOracle, configuration, p);
+					this.doExport(biomeDataOracle, dimension, configuration, p);
 				} finally {
 					ACTIVE_THREADS.decrementAndGet();
 					SwingUtilities.invokeLater(() -> {
@@ -88,6 +90,7 @@ public class BiomeExporter {
 
 	@CalledOnlyBy(AmidstThread.WORKER)
 	private void doExport(BiomeDataOracle biomeDataOracle,
+			Dimension dimension,
 			BiomeExporterConfiguration configuration,
 			ProgressReporter<Entry<ProgressEntryType, Integer>> progressReporter) {
 
@@ -105,7 +108,7 @@ public class BiomeExporter {
 			progressReporter.report(entry(MAX, height + 1));
 
 			RenderedImage img = new CustomRenderedImage(x, y, width, height,
-					configuration.getBiomeProfileSelection(), biomeDataOracle, configuration.isQuarterResolution(),
+					configuration.getBiomeProfileSelection(), biomeDataOracle, dimension, configuration.isQuarterResolution(),
 					progressReporter);
 
 			try {
@@ -161,6 +164,7 @@ public class BiomeExporter {
 		private final boolean useQuarterResolution;
 		private final int resolutionFactor;
 		private final ProgressReporter<Entry<ProgressEntryType, Integer>> progressReporter;
+		private final Dimension dimension;
 
 		// The PNG renderer asks for data scanline by scanline, but the BiomeDataOracle has better
 		// performance when computing biome data for "thicker" regions.
@@ -176,6 +180,7 @@ public class BiomeExporter {
 				int height,
 				BiomeProfileSelection biomeProfileSelection,
 				BiomeDataOracle biomeDataOracle,
+				Dimension dimension,
 				boolean useQuarterResolution,
 				ProgressReporter<Entry<ProgressEntryType, Integer>> progressReporter) {
 			this.useQuarterResolution = useQuarterResolution;
@@ -188,6 +193,7 @@ public class BiomeExporter {
 			this.sampleModel = new SinglePixelPackedSampleModel(DataBuffer.TYPE_INT, width, height, BITMASKS);
 			this.biomeProfileSelection = biomeProfileSelection;
 			this.biomeDataOracle = biomeDataOracle;
+			this.dimension = dimension;
 			this.progressReporter = progressReporter;
 			this.cachedHeight = DEFAULT_BATCH_HEIGHT;
 		}
@@ -236,7 +242,7 @@ public class BiomeExporter {
 			// New batch, calculate the new pixels
 			if (rect.y < cachedY || rect.y >= cachedY + cachedHeight) {
 				CoordinatesInWorld corner = CoordinatesInWorld.from((long) worldX + rect.x * resolutionFactor, (long) worldY + rect.y * resolutionFactor);
-				biomeDataOracle.getBiomeData(corner, getWidth(), cachedHeight, useQuarterResolution, data -> {
+				biomeDataOracle.getBiomeData(corner, dimension, getWidth(), cachedHeight, useQuarterResolution, data -> {
 					for (int i = 0; i < cachedPixels.length; i++) {
 						cachedPixels[i] = biomeProfileSelection.getBiomeColorOrUnknown(data[i]).getRGB();
 					}

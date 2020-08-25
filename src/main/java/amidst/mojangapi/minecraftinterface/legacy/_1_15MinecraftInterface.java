@@ -380,7 +380,7 @@ public class _1_15MinecraftInterface implements MinecraftInterface {
 
 	    	Set<Dimension> supportedDimensions = EnumSet.of(Dimension.OVERWORLD);
 	    	if (threadedNetherBiomeProvider != null) {
-	    		supportedDimensions.add(Dimension.NETHER);
+	    		// supportedDimensions.add(Dimension.NETHER); : I think It's joke.
 	    	}
 	    	this.supportedDimensions = Collections.unmodifiableSet(supportedDimensions);
 	    }
@@ -401,7 +401,9 @@ public class _1_15MinecraftInterface implements MinecraftInterface {
 				break;
 			case NETHER:
 				if (this.threadedNetherBiomeProvider != null) {
-					biomeProvider = this.threadedNetherBiomeProvider;
+					// anyway not working with NullPointerException
+					// biomeProvider = this.threadedNetherBiomeProvider;
+					biomeProvider = this.threadedOWBiomeProvider;
 					biomeHeight = 63; // Pick an arbitrary value
 					break;
 				}
