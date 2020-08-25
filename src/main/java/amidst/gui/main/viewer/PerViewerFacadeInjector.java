@@ -20,6 +20,7 @@ import amidst.fragment.layer.LayerManager;
 import amidst.fragment.layer.LayerReloader;
 import amidst.gui.export.BiomeExporterDialog;
 import amidst.gui.main.Actions;
+import amidst.gui.main.viewer.widget.BiomeExporterProgressWidget;
 import amidst.gui.main.viewer.widget.BiomeToggleWidget;
 import amidst.gui.main.viewer.widget.BiomeWidget;
 import amidst.gui.main.viewer.widget.CpuUsageTimer;
@@ -27,7 +28,7 @@ import amidst.gui.main.viewer.widget.CursorInformationWidget;
 import amidst.gui.main.viewer.widget.DebugWidget;
 import amidst.gui.main.viewer.widget.FpsWidget;
 import amidst.gui.main.viewer.widget.FramerateTimer;
-import amidst.gui.main.viewer.widget.BiomeExporterProgressWidget;
+import amidst.gui.main.viewer.widget.ProgressWidget.ProgressEntryType;
 import amidst.gui.main.viewer.widget.ScaleWidget;
 import amidst.gui.main.viewer.widget.SeedAndWorldTypeWidget;
 import amidst.gui.main.viewer.widget.SelectedIconWidget;
@@ -58,7 +59,7 @@ public class PerViewerFacadeInjector {
 			Supplier<JComponent> parentComponentSupplier) {
 		BiomeWidget biomeWidget = new BiomeWidget(CornerAnchorPoint.NONE, biomeSelection, layerReloader, settings.biomeProfileSelection, world.getBiomeList(), parentComponentSupplier);
 		DebugWidget debugWidget = new DebugWidget(CornerAnchorPoint.BOTTOM_RIGHT, graph, fragmentManager, settings.showDebug, accelerationCounter, zoom);
-		BiomeToggleWidget biomeToggleWidget = new BiomeToggleWidget(CornerAnchorPoint.BOTTOM_RIGHT, biomeSelection);
+		BiomeToggleWidget biomeToggleWidget = new BiomeToggleWidget(CornerAnchorPoint.BOTTOM_RIGHT, biomeSelection, biomeWidget);
 		WorldOptions worldOptions = world.getWorldOptions();
 		return Arrays.asList(
 				new FpsWidget(                  CornerAnchorPoint.BOTTOM_LEFT,   new FramerateTimer(2),       new CpuUsageTimer(2),      settings.showFPS),
@@ -76,7 +77,6 @@ public class PerViewerFacadeInjector {
 
 	private static BiomeSelection biomeSelection = null;
 	private static RecognisedVersion lastUsedVersion = null;
-	
 	private final Graphics2DAccelerationCounter accelerationCounter;
 	private final Movement movement;
 	private final WorldIconSelection worldIconSelection;
@@ -101,12 +101,12 @@ public class PerViewerFacadeInjector {
 			LayerBuilder layerBuilder,
 			FragmentManager fragmentManager,
 			BiomeExporterDialog biomeExporterDialog,
+			BiomeSelection biomeSelection,
 			World world,
 			Actions actions) {
 		if(biomeSelection == null || lastUsedVersion == null || !lastUsedVersion.equals(world.getRecognisedVersion())) {
-			biomeSelection = new BiomeSelection(world.getBiomeList());
+			biomeSelection = new BiomeSelection();
 		}
-		
 		this.accelerationCounter = new Graphics2DAccelerationCounter();
 		this.movement = new Movement(settings.smoothScrolling);
 		this.worldIconSelection = new WorldIconSelection();

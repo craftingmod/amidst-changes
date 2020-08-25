@@ -60,7 +60,7 @@ public class BiomeWidget extends Widget {
 	private BiomeList biomeList;
 	private int maxNameWidth = 0;
 	private boolean isInitialized = false;
-	private static boolean isVisible = false;
+	private boolean isVisible;
 
 	private Rectangle innerBox = new Rectangle(0, 0, 1, 1);
 
@@ -88,6 +88,7 @@ public class BiomeWidget extends Widget {
 		this.layerReloader = layerReloader;
 		this.biomeProfileSelection = biomeProfileSelection;
 		this.biomeList = biomeList;
+		this.isVisible = biomeSelection.isWidgetVisible();
 		
 		this.searchField = new JTextField() {
 			private static final long serialVersionUID = 7635606378222847774L;
@@ -104,8 +105,8 @@ public class BiomeWidget extends Widget {
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
-	public static void toggleVisibility() {
-		isVisible = !isVisible;
+	public void toggleVisibility() {
+		isVisible = biomeSelection.toggleWidgetVisibility();
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
@@ -123,8 +124,6 @@ public class BiomeWidget extends Widget {
 		}
 		updateSearchField();
 	}
-	
-	
 
 	@CalledOnlyBy(AmidstThread.EDT)
 	private void initializeIfNecessary(FontMetrics fontMetrics) {
@@ -476,7 +475,7 @@ public class BiomeWidget extends Widget {
 				biomeSelection.selectAll();
 				return biomeSelection.isHighlightMode();
 			} else if (isSelectSpecialBiomesButton(mouseX)) {
-				biomeSelection.selectOnlySpecial();
+				selectOnlySpecialBiomes();
 				return biomeSelection.isHighlightMode();
 			} else if (isDeselectAllButton(mouseX)) {
 				biomeSelection.deselectAll();
@@ -484,6 +483,16 @@ public class BiomeWidget extends Widget {
 			}
 		}
 		return false;
+	}
+
+	@CalledOnlyBy(AmidstThread.EDT)
+	private void selectOnlySpecialBiomes() {
+		biomeSelection.deselectAll();
+		for (Biome biome: biomeList.iterable()) {
+			if (biome.isSpecialBiome()) {
+				biomeSelection.toggle(biome.getId());
+			}
+		}
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)

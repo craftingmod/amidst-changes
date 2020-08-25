@@ -5,8 +5,10 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.Set;
 import java.util.function.Function;
 
 import amidst.clazz.symbolic.SymbolicClass;
@@ -15,6 +17,8 @@ import amidst.logging.AmidstLogger;
 import amidst.mojangapi.minecraftinterface.MinecraftInterface;
 import amidst.mojangapi.minecraftinterface.MinecraftInterfaceException;
 import amidst.mojangapi.minecraftinterface.RecognisedVersion;
+import amidst.mojangapi.minecraftinterface.UnsupportedDimensionException;
+import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.WorldType;
 import amidst.util.ArrayCache;
 
@@ -310,14 +314,22 @@ public class _1_13MinecraftInterface implements MinecraftInterface {
 		}
 
 		@Override
-		public<T> T getBiomeData(int x, int y, int width, int height,
+		public<T> T getBiomeData(Dimension dimension,
+				int x, int y, int width, int height,
 				boolean useQuarterResolution, Function<int[], T> biomeDataMapper)
 				throws MinecraftInterfaceException {
 			int biomeGeneratorIndex = useQuarterResolution ? 0 : 1;
+			if (dimension != Dimension.OVERWORLD)
+				throw new UnsupportedDimensionException(dimension);
 			return dataArray.withArrayFaillible(width * height, data -> {
 				populateBiomeData(data, x, y, width, height, threadedBiomeGenerators.get()[biomeGeneratorIndex]);
 				return biomeDataMapper.apply(data);
 			});
+		}
+
+		@Override
+		public Set<Dimension> supportedDimensions() {
+			return Collections.singleton(Dimension.OVERWORLD);
 		}
 	}
 }
