@@ -40,17 +40,6 @@ dependencies {
     implementation 'com.github.KaptainWutax:SeedUtils:master-SNAPSHOT'
     testImplementation 'junit:junit:4.11'
     compileOnly 'org.codehaus.mojo:properties-maven-plugin:1.0.0'
-    // fabric
-    implementation "net.fabricmc:fabric-loader:0.9.0+build.204"
-    implementation "net.fabricmc:sponge-mixin:0.8.1+build.20"
-    implementation "net.fabricmc:fabric-loader-sat4j:2.3.5.4"
-    implementation "net.fabricmc:tiny-mappings-parser:0.2.2.14"
-    implementation "net.fabricmc:tiny-remapper:0.3.0.70"
-    // etc
-    implementation "com.googlecode.json-simple:json-simple:1.1.1"
-    implementation "org.apache.logging.log4j:log4j-core:2.13.3"
-    implementation "com.google.jimfs:jimfs:1.1"
-    implementation "com.github.classgraph:classgraph:classgraph-4.8.88"
 }
 
 tasks.withType(JavaCompile) {

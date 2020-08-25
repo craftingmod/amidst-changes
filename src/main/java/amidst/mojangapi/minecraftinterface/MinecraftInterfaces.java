@@ -1,13 +1,14 @@
 package amidst.mojangapi.minecraftinterface;
 
+import java.io.IOException;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.function.BiFunction;
 
 import amidst.clazz.Classes;
-import amidst.clazz.fabric.FabricSetup;
+import amidst.clazz.real.JarFileParsingException;
 import amidst.clazz.symbolic.SymbolicClass;
+import amidst.clazz.symbolic.SymbolicClassGraphCreationException;
 import amidst.clazz.translator.ClassTranslator;
 import amidst.documentation.NotNull;
 import amidst.logging.AmidstLogger;
@@ -30,32 +31,29 @@ public enum MinecraftInterfaces {
         try {
             URLClassLoader classLoader = launcherProfile.newClassLoader();
             RecognisedVersion recognisedVersion = RecognisedVersion.from(classLoader);
-            
-    		AmidstLogger.info("Loading fabric...");
-    		Object[] fabricObjects = FabricSetup.initAndGetObjects(classLoader, launcherProfile.getJar());
-    		ClassLoader knotClassLoader = (ClassLoader) fabricObjects[0];
-    		Path intermediaryJar = (Path) fabricObjects[1];
-    		AmidstLogger.info("Fabric load complete.");
-    		
             Factory factory = fromVersion(recognisedVersion);
             Map<String, SymbolicClass> symbolicClassMap = Classes
-                    .createSymbolicClassMap(intermediaryJar, knotClassLoader, factory.classTranslator);
+                    .createSymbolicClassMap(launcherProfile.getJar(), classLoader, factory.classTranslator);
             MinecraftInterface minecraftInterface = factory.factory.apply(symbolicClassMap, recognisedVersion);
 
             AmidstLogger.info("Minecraft load complete.");
             return minecraftInterface;
-        } catch (Throwable e) {
+        } catch (
+                ClassNotFoundException
+                | JarFileParsingException
+                | SymbolicClassGraphCreationException
+                | IOException e) {
             throw new MinecraftInterfaceCreationException("unable to create local minecraft interface", e);
         }
     }
-    
+
     @NotNull
     public static ClassTranslator getClassTranslatorFromVersion(RecognisedVersion recognisedVersion) {
         return fromVersion(recognisedVersion).classTranslator;
     }
-    
+
     @NotNull
-    static Factory fromVersion(RecognisedVersion version) {
+    private static Factory fromVersion(RecognisedVersion version) {
         if(RecognisedVersion.isOlderOrEqualTo(version, LegacyMinecraftInterface.LAST_COMPATIBLE_VERSION)) {
             return new Factory(LegacyClassTranslator.get(), LegacyMinecraftInterface::new);
         } else if(RecognisedVersion.isOlderOrEqualTo(version, _1_13MinecraftInterface.LAST_COMPATIBLE_VERSION)) {
@@ -66,7 +64,7 @@ public enum MinecraftInterfaces {
         	return new Factory(DefaultClassTranslator.get(), LocalMinecraftInterface::new);
         }
     }
-    
+
     private static class Factory {
         public ClassTranslator classTranslator;
         public BiFunction<Map<String, SymbolicClass>, RecognisedVersion, MinecraftInterface> factory;
@@ -77,5 +75,4 @@ public enum MinecraftInterfaces {
             this.factory = factory;
         }
     }
-    
 }
