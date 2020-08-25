@@ -60,7 +60,7 @@ public class BiomeWidget extends Widget {
 	private BiomeList biomeList;
 	private int maxNameWidth = 0;
 	private boolean isInitialized = false;
-	private boolean isVisible = false;
+	private static boolean isVisible = false;
 
 	private Rectangle innerBox = new Rectangle(0, 0, 1, 1);
 
@@ -104,7 +104,7 @@ public class BiomeWidget extends Widget {
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
-	public void toggleVisibility() {
+	public static void toggleVisibility() {
 		isVisible = !isVisible;
 	}
 
