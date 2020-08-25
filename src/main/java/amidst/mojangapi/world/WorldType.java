@@ -15,7 +15,9 @@ public enum WorldType {
 	FLAT         ("Flat",         "flat",         LegacySymbolicNames.FIELD_WORLD_TYPE_FLAT),
 	LARGE_BIOMES ("Large Biomes", "large-biomes", LegacySymbolicNames.FIELD_WORLD_TYPE_LARGE_BIOMES),
 	AMPLIFIED    ("Amplified",    "amplified",    LegacySymbolicNames.FIELD_WORLD_TYPE_AMPLIFIED),
-	CUSTOMIZED   ("Customized",   "customized",   LegacySymbolicNames.FIELD_WORLD_TYPE_CUSTOMIZED);
+	CUSTOMIZED   ("Customized",   "customized",   LegacySymbolicNames.FIELD_WORLD_TYPE_CUSTOMIZED),
+	
+	CUSTOM       ("Custom", "", "");
 	// @formatter:on
 
 	public static final String PROMPT_EACH_TIME = "Prompt each time";
@@ -24,7 +26,8 @@ public enum WorldType {
 			WorldType.DEFAULT,
 			WorldType.FLAT,
 			WorldType.LARGE_BIOMES,
-			WorldType.AMPLIFIED };
+			WorldType.AMPLIFIED,
+			WorldType.CUSTOM };
 
 	private static final List<WorldType> SELECTABLE_WORLD_TYPES = Arrays.asList(SELECTABLE_WORLD_TYPES_ARRAY);
 
@@ -33,7 +36,8 @@ public enum WorldType {
 			WorldType.DEFAULT.getName(),
 			WorldType.FLAT.getName(),
 			WorldType.LARGE_BIOMES.getName(),
-			WorldType.AMPLIFIED.getName() };
+			WorldType.AMPLIFIED.getName(),
+			WorldType.CUSTOM.getName() };
 
 	public static List<WorldType> getSelectable() {
 		return SELECTABLE_WORLD_TYPES;

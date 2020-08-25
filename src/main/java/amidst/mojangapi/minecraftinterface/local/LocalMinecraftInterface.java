@@ -29,6 +29,8 @@ import amidst.mojangapi.minecraftinterface.UnsupportedDimensionException;
 import amidst.mojangapi.world.Dimension;
 import amidst.mojangapi.world.WorldType;
 import amidst.util.ArrayCache;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.entrypoint.minecraft.hooks.EntrypointUtils;
 
 public class LocalMinecraftInterface implements MinecraftInterface {
 
@@ -41,10 +43,8 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 	private final SymbolicClass registryClass;
 	private final SymbolicClass registryAccessClass;
 	private final SymbolicClass resourceKeyClass;
-	private final SymbolicClass chunkGeneratorClass;
 	private final SymbolicClass worldGenSettingsClass;
 	private final SymbolicClass dimensionSettingsClass;
-	private final SymbolicClass dynamicRegistryManagerClass;
 	private final SymbolicClass noiseBiomeProviderClass;
 	private final SymbolicClass biomeZoomerClass;
 	private final SymbolicClass utilClass;
@@ -55,7 +55,6 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 
     private Object registryAccess; // Default registry to use when creating worlds (after 20w28a)
 	private Object biomeRegistry;
-	private Object defaultDynamicRegistry;
 
 	private Object overworldResourceKey;
 	private Object netherResourceKey;
@@ -70,9 +69,8 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 		this.registryClass = symbolicClassMap.get(SymbolicNames.CLASS_REGISTRY);
 		this.registryAccessClass = symbolicClassMap.get(SymbolicNames.CLASS_REGISTRY_ACCESS);
         this.resourceKeyClass = symbolicClassMap.get(SymbolicNames.CLASS_RESOURCE_KEY);
-        this.chunkGeneratorClass = symbolicClassMap.get(SymbolicNames.CLASS_CHUNK_GENERATOR);
         this.worldGenSettingsClass = symbolicClassMap.get(SymbolicNames.CLASS_WORLD_GEN_SETTINGS);
-        this.dynamicRegistryManagerClass = symbolicClassMap.get(SymbolicNames.CLASS_DYNAMIC_REGISTRY_MANAGER);
+
         this.dimensionSettingsClass = symbolicClassMap.get(SymbolicNames.CLASS_DIMENSION_SETTINGS);
         this.noiseBiomeProviderClass = symbolicClassMap.get(SymbolicNames.CLASS_NOISE_BIOME_PROVIDER);
         this.biomeZoomerClass = symbolicClassMap.get(SymbolicNames.CLASS_BIOME_ZOOMER);
@@ -159,7 +157,24 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 			throw new MinecraftInterfaceException("unable to hash seed for biome zoomer", e);
 		}
 	}
+	private SymbolicObject createWorldSettingsObject(long seed, WorldType worldType, String generatorOptions)
+			throws IllegalAccessException, InvocationTargetException, MinecraftInterfaceException {
+		Properties worldProperties = new Properties();
+		// Minecraft interprets "0" as a random seed, so provide a string hashing to 0 instead
+		worldProperties.setProperty("level-seed", seed == 0 ? STRING_WITH_ZERO_HASHCODE : Long.toString(seed));
+		worldProperties.setProperty("level-type", getTrueWorldTypeName(worldType));
+		worldProperties.setProperty("generator-settings", generatorOptions);
 
+		if (worldGenSettingsClass.hasMethod(SymbolicNames.METHOD_WORLD_GEN_SETTINGS_CREATE)) {
+			return (SymbolicObject) worldGenSettingsClass.callStaticMethod(
+					SymbolicNames.METHOD_WORLD_GEN_SETTINGS_CREATE, worldProperties);
+		} else {
+			Objects.requireNonNull(registryAccess);
+			return (SymbolicObject) worldGenSettingsClass.callStaticMethod(
+					SymbolicNames.METHOD_WORLD_GEN_SETTINGS_CREATE2, registryAccess, worldProperties);
+		}
+	}
+	/*
 	private Object createBiomeProviderObject(long seed, WorldType worldType, String generatorOptions)
 			throws IllegalAccessException, InvocationTargetException, MinecraftInterfaceException {
 		Properties worldProperties = new Properties();
@@ -182,6 +197,8 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 			}
 		}
 
+
+
 		for (Method meth : chunkGeneratorClass.getClazz().getMethods()) {
 			if (meth.getParameterCount() == 0
 					&& noiseBiomeProviderClass.getClazz().isAssignableFrom(meth.getReturnType())) {
@@ -191,24 +208,7 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 
 		throw new MinecraftInterfaceException("Couldn't retrieve biome provider from chunk generator");
 	}
-
-	private SymbolicObject createWorldSettingsObject(long seed, WorldType worldType, String generatorOptions)
-			throws IllegalAccessException, InvocationTargetException, MinecraftInterfaceException {
-		Properties worldProperties = new Properties();
-		// Minecraft interprets "0" as a random seed, so provide a string hashing to 0 instead
-		worldProperties.setProperty("level-seed", seed == 0 ? STRING_WITH_ZERO_HASHCODE : Long.toString(seed));
-		worldProperties.setProperty("level-type", getTrueWorldTypeName(worldType));
-		worldProperties.setProperty("generator-settings", generatorOptions);
-
-		if (worldGenSettingsClass.hasMethod(SymbolicNames.METHOD_WORLD_GEN_SETTINGS_CREATE)) {
-			return (SymbolicObject) worldGenSettingsClass.callStaticMethod(
-					SymbolicNames.METHOD_WORLD_GEN_SETTINGS_CREATE, worldProperties);
-		} else {
-			Objects.requireNonNull(registryAccess);
-			return (SymbolicObject) worldGenSettingsClass.callStaticMethod(
-					SymbolicNames.METHOD_WORLD_GEN_SETTINGS_CREATE2, registryAccess, worldProperties);
-		}
-	}
+	 */
 
 	private Object getBiomesFromDimensionRegistry(Object dimensionRegistry, Object key)
 			throws IllegalAccessException, InvocationTargetException, MinecraftInterfaceException {
@@ -255,42 +255,6 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 		return recognisedVersion;
 	}
 
-	private synchronized void _initializeIfNeeded() throws MinecraftInterfaceException {
-		if (isInitialized) {
-			return;
-		}
-
-		try {
-			if(RecognisedVersion.isNewerOrEqualTo(recognisedVersion, RecognisedVersion._1_16_2)) {
-				defaultDynamicRegistry = dynamicRegistryManagerClass.getMethod(SymbolicNames.METHOD_DYNAMIC_REGISTRY_MANAGER_CREATE).getRawMethod().invoke(null);
-				biomeRegistry = Objects.requireNonNull(getFromRegistryByKey(defaultDynamicRegistry, "worldgen/biome", true));
-
-			} else {
-				Object metaRegistry = registryClass.getStaticFieldValue(SymbolicNames.FIELD_REGISTRY_META_REGISTRY);
-				if (!(metaRegistry instanceof SymbolicObject)) { // Oops, we called the wrong method
-					String name = RecognisedVersion.isOlder(recognisedVersion, RecognisedVersion._1_16_pre1) ?
-							SymbolicNames.FIELD_REGISTRY_META_REGISTRY2 : SymbolicNames.FIELD_REGISTRY_META_REGISTRY3;
-					metaRegistry = registryClass.getStaticFieldValue(name);
-				}
-				metaRegistry = ((SymbolicObject) metaRegistry).getObject();
-
-				biomeRegistry = Objects.requireNonNull(getFromRegistryByKey(metaRegistry, "biome", false));
-
-			}
-
-			stopAllExecutors();
-
-			registryGetIdMethod = getMethodHandle(registryClass, SymbolicNames.METHOD_REGISTRY_GET_ID);
-			biomeProviderGetBiomeMethod = getMethodHandle(noiseBiomeProviderClass, SymbolicNames.METHOD_NOISE_BIOME_PROVIDER_GET_BIOME);
-			biomeZoomerGetBiomeMethod = getMethodHandle(biomeZoomerClass, SymbolicNames.METHOD_BIOME_ZOOMER_GET_BIOME);
-		} catch(IllegalArgumentException | IllegalAccessException | InstantiationException
-				| InvocationTargetException e) {
-			throw new MinecraftInterfaceException("unable to initialize the MinecraftInterface", e);
-		}
-
-		isInitialized = true;
-	}
-
 	private synchronized void initializeIfNeeded() throws MinecraftInterfaceException {
 		if (isInitialized) {
 			return;
@@ -300,6 +264,8 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 			if (registryAccessClass == null) {
 				registryAccess = null;
 				biomeRegistry = getLegacyBiomeRegistry();
+
+				registryGetIdMethod = getMethodHandle(registryClass, SymbolicNames.METHOD_REGISTRY_GET_ID);
 			} else {
 				Object key = ((SymbolicObject) registryClass
 						.callStaticMethod(SymbolicNames.METHOD_REGISTRY_CREATE_KEY, "worldgen/biome"))
@@ -310,11 +276,14 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 				biomeRegistry = registryAccessClass.getMethod(SymbolicNames.METHOD_REGISTRY_ACCESS_GET_REGISTRY)
 						.getRawMethod().invoke(registryAccess, key);
 				biomeRegistry = Objects.requireNonNull(biomeRegistry);
+
+				registryGetIdMethod = getMethodHandle(registryClass, SymbolicNames.METHOD_REGISTRY_GET_ID2);
 			}
 
 			stopAllExecutors();
 
-			registryGetIdMethod = getMethodHandle(registryClass, SymbolicNames.METHOD_REGISTRY_GET_ID);
+			EntrypointUtils.invoke("main", ModInitializer.class, ModInitializer::onInitialize);
+
 			biomeProviderGetBiomeMethod = getMethodHandle(noiseBiomeProviderClass, SymbolicNames.METHOD_NOISE_BIOME_PROVIDER_GET_BIOME);
 			biomeZoomerGetBiomeMethod = getMethodHandle(biomeZoomerClass, SymbolicNames.METHOD_BIOME_ZOOMER_GET_BIOME);
 
@@ -331,15 +300,8 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 	private Object getLegacyBiomeRegistry() throws IllegalArgumentException, IllegalAccessException,
     	InstantiationException, InvocationTargetException, MinecraftInterfaceException {
     	Object metaRegistry = registryClass.getStaticFieldValue(SymbolicNames.FIELD_REGISTRY_META_REGISTRY);
-    	if (!(metaRegistry instanceof SymbolicObject && ((SymbolicObject) metaRegistry).getType().equals(registryClass))) {
-    		// Oops, we called the wrong method
-    		String name = RecognisedVersion.isOlder(recognisedVersion, RecognisedVersion._1_16_pre1) ?
-    				SymbolicNames.FIELD_REGISTRY_META_REGISTRY2 : SymbolicNames.FIELD_REGISTRY_META_REGISTRY3;
-        	metaRegistry = registryClass.getStaticFieldValue(name);
-        }
 
-        return ((SymbolicObject) metaRegistry).callMethod(
-            SymbolicNames.METHOD_REGISTRY_GET_BY_KEY, createResourceKey("biome"));
+        return ((SymbolicObject) metaRegistry).callMethod(SymbolicNames.METHOD_REGISTRY_GET_BY_KEY, createResourceKey("biome"));
     }
 
 	private void stopAllExecutors() throws IllegalArgumentException, IllegalAccessException {
@@ -353,26 +315,6 @@ public class LocalMinecraftInterface implements MinecraftInterface {
 		}
 	}
 
-	private Object getFromRegistryByKey(Object registry, String key, boolean isDynamic)
-	        throws MinecraftInterfaceException, InstantiationException,
-	        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-	    Object registryKey;
-	    if (resourceKeyClass.hasConstructor(SymbolicNames.CONSTRUCTOR_RESOURCE_KEY)) {
-	    	registryKey = resourceKeyClass
-	                .callConstructor(SymbolicNames.CONSTRUCTOR_RESOURCE_KEY, key)
-	                .getObject();
-	    } else if (registryClass.hasMethod(SymbolicNames.METHOD_REGISTRY_CREATE_KEY)) {
-	    	registryKey = ((SymbolicObject) registryClass
-	    			.callStaticMethod(SymbolicNames.METHOD_REGISTRY_CREATE_KEY, key))
-	    			.getObject();
-	    } else {
-	    	throw new MinecraftInterfaceException("couldn't create registry key");
-	    }
-
-	    Method getByKey = isDynamic ? dynamicRegistryManagerClass.getMethod(SymbolicNames.METHOD_DYNAMIC_REGISTRY_MANAGER_GET).getRawMethod()
-	    							: registryClass.getMethod(SymbolicNames.METHOD_REGISTRY_GET_BY_KEY).getRawMethod();
-	    return getByKey.invoke(registry, registryKey);
-	}
 	private Object createResourceKey(String key)
 			throws InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, MinecraftInterfaceException {
