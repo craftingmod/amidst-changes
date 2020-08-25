@@ -25,6 +25,7 @@ public class LayersMenu {
 	private final AmidstSettings settings;
 	private final Setting<Dimension> dimensionSetting;
 	private final List<JMenuItem> overworldMenuItems = new LinkedList<>();
+	private final List<JMenuItem> netherMenuItems = new LinkedList<>();
 	private final List<JMenuItem> endMenuItems = new LinkedList<>();
 	private volatile ViewerFacade viewerFacade;
 
@@ -51,22 +52,31 @@ public class LayersMenu {
 		menu.removeAll();
 		overworldMenuItems.clear();
 		endMenuItems.clear();
+		netherMenuItems.clear();
 		createDimensionLayers(selectedDimension);
 		menu.setEnabled(true);
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
 	private void createDimensionLayers(Dimension dimension) {
+		ButtonGroup group = new ButtonGroup();
+		// All dimension menu
+		createAllDimensions();
+		menu.addSeparator();
+		// Overworld Menu
+		Menus.radio(menu, dimensionSetting, group, Dimension.OVERWORLD, MenuShortcuts.DISPLAY_DIMENSION_OVERWORLD);
+		createOverworldLayers(dimension);
+		// Nether Menu
+		if (settings.enableNether.get()) {
+			menu.addSeparator();
+			Menus.radio(menu, dimensionSetting, group, Dimension.NETHER, MenuShortcuts.DISPLAY_DIMENSION_NETHER);
+			createNetherLayers(dimension);
+		}
+		// End Menu
 		if (viewerFacade.hasLayer(LayerIds.END_ISLANDS)) {
-			createAllDimensions();
 			menu.addSeparator();
-			createOverworldAndEndLayers(dimension);
-		} else if (!dimension.equals(Dimension.OVERWORLD)) {
-			dimensionSetting.set(Dimension.OVERWORLD);
-		} else {
-			createAllDimensions();
-			menu.addSeparator();
-			createOverworldLayers(dimension);
+			Menus.radio(menu, dimensionSetting, group, Dimension.END, MenuShortcuts.DISPLAY_DIMENSION_END);
+			createEndLayers(dimension);
 		}
 	}
 
@@ -94,8 +104,14 @@ public class LayersMenu {
 		overworldLayer(settings.showOceanMonuments,       "Ocean Monument Icons",   getIcon("ocean_monument.png"),  MenuShortcuts.SHOW_OCEAN_MONUMENTS,   dimension, LayerIds.OCEAN_MONUMENT);
 		overworldLayer(settings.showWoodlandMansions,     "Woodland Mansion Icons", getIcon("woodland_mansion.png"),MenuShortcuts.SHOW_WOODLAND_MANSIONS, dimension, LayerIds.WOODLAND_MANSION);
 		overworldLayer(settings.showOceanFeatures,        "Ocean Features Icons",   getIcon("shipwreck.png"),       MenuShortcuts.SHOW_OCEAN_FEATURES,    dimension, LayerIds.OCEAN_FEATURES);
-		overworldLayer(settings.showNetherFortresses,     "Nether Features Icons",  getIcon("nether_fortress.png"), MenuShortcuts.SHOW_NETHER_FEATURES,   dimension, LayerIds.NETHER_FEATURES);
+		// overworldLayer(settings.showNetherFortresses,     "Nether Features Icons",  getIcon("nether_fortress.png"), MenuShortcuts.SHOW_NETHER_FEATURES,   dimension, LayerIds.NETHER_FEATURES);
 		// @formatter:on
+	}
+
+	@CalledOnlyBy(AmidstThread.EDT)
+	private void createNetherLayers(Dimension dimension) {
+		netherLayer(settings.showNetherFortresses, "Nether Fortress Icons", getIcon("nether_fortress.png"), MenuShortcuts.SHOW_NETHER_FORTRESS, dimension, LayerIds.NETHER_FORTRESS);
+		netherLayer(settings.showNetherFortresses, "Bastion Remnant Icons", getIcon("bastion_remnant.png"), MenuShortcuts.SHOW_BASTION_REMNENT, dimension, LayerIds.NETHER_FORTRESS);
 	}
 	
 	@CalledOnlyBy(AmidstThread.EDT)
@@ -126,6 +142,17 @@ public class LayersMenu {
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
+	public void netherLayer(
+			Setting<Boolean> setting,
+			String text,
+			ImageIcon icon,
+			MenuShortcut menuShortcut,
+			Dimension dimension,
+			int layerId) {
+		netherMenuItems.add(createLayer(setting, text, icon, menuShortcut, dimension, layerId));
+	}
+
+	@CalledOnlyBy(AmidstThread.EDT)
 	public void endLayer(
 			Setting<Boolean> setting,
 			String text,
@@ -135,7 +162,6 @@ public class LayersMenu {
 			int layerId) {
 		endMenuItems.add(createLayer(setting, text, icon, menuShortcut, dimension, layerId));
 	}
-
 	@CalledOnlyBy(AmidstThread.EDT)
 	private JCheckBoxMenuItem createLayer(
 			Setting<Boolean> setting,

@@ -27,8 +27,10 @@ public class AmidstSettings {
 	public final Setting<Boolean> showWoodlandMansions;
 	public final Setting<Boolean> showOceanFeatures;
 	public final Setting<Boolean> showNetherFortresses;
+	public final Setting<Boolean> showBastionRemnant;
 	public final Setting<Boolean> showEndCities;
 	public final Setting<Boolean> showEndGateways;
+	public final Setting<Boolean> enableNether; // debug only
 
 	public final Setting<Boolean> smoothScrolling;
 	public final Setting<Boolean> fragmentFading;
@@ -65,9 +67,11 @@ public class AmidstSettings {
 		showOceanMonuments         = Setting.createBoolean(  preferences, "oceanMonumentIcons",   true);
 		showWoodlandMansions       = Setting.createBoolean(  preferences, "woodlandMansionIcons", true);
 		showOceanFeatures          = Setting.createBoolean(  preferences, "oceanFeaturesIcons",   true);
-		showNetherFortresses       = Setting.createBoolean(  preferences, "netherFortressIcons",  false);
-		showEndCities              = Setting.createBoolean(  preferences, "endCityIcons",         false);
-		showEndGateways            = Setting.createBoolean(  preferences, "endGatewayIcons",      false);
+		showNetherFortresses       = Setting.createBoolean(  preferences, "netherFortressIcons",  true);
+		showBastionRemnant         = Setting.createBoolean(  preferences, "bastionRemnantIcons",  true);
+		showEndCities              = Setting.createBoolean(  preferences, "endCityIcons",         true);
+		showEndGateways            = Setting.createBoolean(  preferences, "endGatewayIcons",      true);
+		enableNether               = Setting.createBoolean(  preferences, "enableNether",      true);
 
 		smoothScrolling            = Setting.createBoolean(  preferences, "mapFlicking",          true);
 		fragmentFading             = Setting.createBoolean(  preferences, "mapFading",            true);

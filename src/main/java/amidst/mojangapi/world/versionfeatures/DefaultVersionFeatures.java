@@ -153,7 +153,7 @@ public enum DefaultVersionFeatures {
 					LayerIds.VILLAGE,
 					LayerIds.MINESHAFT
 				).sinceExtend(RecognisedVersion._b1_9_pre1,
-					LayerIds.NETHER_FEATURES
+					LayerIds.NETHER_FORTRESS
 				).sinceExtend(RecognisedVersion._12w21a,
 					LayerIds.TEMPLE
 				).sinceExtend(RecognisedVersion._1_8,
@@ -166,6 +166,8 @@ public enum DefaultVersionFeatures {
 				).sinceExtend(RecognisedVersion._18w09a,
 					LayerIds.OCEAN_FEATURES,
 					LayerIds.END_GATEWAY // were introduced in 16w39a, but we can only find them past here
+				).sinceExtend(RecognisedVersion._20w16a, // Check https://minecraft.gamepedia.com/Bastion_Remnant#References
+					LayerIds.BASTION_REMNANT
 				).construct())
 
 			.with(FeatureKey.BIOME_LIST, DefaultBiomes.DEFAULT_BIOMES)

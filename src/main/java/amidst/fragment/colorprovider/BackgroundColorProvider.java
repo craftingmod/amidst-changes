@@ -9,10 +9,12 @@ import amidst.mojangapi.world.biome.BiomeColor;
 @ThreadSafe
 public class BackgroundColorProvider implements ColorProvider {
 	private final BiomeColorProvider biomeColorProvider;
+	private final NetherColorProvider netherColorProvider;
 	private final TheEndColorProvider theEndColorProvider;
 
-	public BackgroundColorProvider(BiomeColorProvider biomeColorProvider, TheEndColorProvider theEndColorProvider) {
+	public BackgroundColorProvider(BiomeColorProvider biomeColorProvider, NetherColorProvider netherColorProvider, TheEndColorProvider theEndColorProvider) {
 		this.biomeColorProvider = biomeColorProvider;
+		this.netherColorProvider = netherColorProvider;
 		this.theEndColorProvider = theEndColorProvider;
 	}
 
@@ -22,6 +24,8 @@ public class BackgroundColorProvider implements ColorProvider {
 			return biomeColorProvider.getColorAt(dimension, fragment, cornerX, cornerY, x, y);
 		} else if (dimension.equals(Dimension.END)) {
 			return theEndColorProvider.getColorAt(dimension, fragment, cornerX, cornerY, x, y);
+		} else if (dimension.equals(Dimension.NETHER)) {
+			return netherColorProvider.getColorAt(dimension, fragment, cornerX, cornerY, x, y);
 		} else {
 			AmidstLogger.warn("unsupported dimension");
 			return BiomeColor.unknown().getRGB();

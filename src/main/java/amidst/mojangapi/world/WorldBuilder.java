@@ -117,10 +117,8 @@ public class WorldBuilder {
 						versionFeatures.get(FeatureKey.SHIPWRECK_PRODUCER),
 						versionFeatures.get(FeatureKey.BURIED_TREASURE_PRODUCER)
 				),
-				new MultiProducer<>(
-						versionFeatures.get(FeatureKey.NETHER_FORTRESS_PRODUCER),
-						versionFeatures.get(FeatureKey.BASTION_REMNANT_PRODUCER)
-				),
+				versionFeatures.get(FeatureKey.NETHER_FORTRESS_PRODUCER),
+				versionFeatures.get(FeatureKey.BASTION_REMNANT_PRODUCER),
 				versionFeatures.get(FeatureKey.END_CITY_PRODUCER),
 				versionFeatures.get(FeatureKey.END_GATEWAY_PRODUCER)
 		);

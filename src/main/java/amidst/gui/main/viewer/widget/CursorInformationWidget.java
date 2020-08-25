@@ -63,6 +63,9 @@ public class CursorInformationWidget extends TextWidget {
 			return getOverworldBiomeNameAt(coordinates);
 		} else if (dimension.equals(Dimension.END)) {
 			return getEndBiomeNameAt(coordinates);
+		} else if (dimension.equals(Dimension.NETHER)) {
+			// @TODO temp
+			return getOverworldBiomeNameAt(coordinates);
 		} else {
 			AmidstLogger.warn("unsupported dimension");
 			return UNKNOWN_BIOME_NAME;
