@@ -91,14 +91,19 @@ public enum DefaultVersionFeatures {
 	private static final FeatureKey<Long>            SHIPWRECK_SALT                            = FeatureKey.make();
 	private static final FeatureKey<Long>            BURIED_TREASURE_SALT                      = FeatureKey.make();
 	private static final FeatureKey<Long>            NETHER_BUILDING_SALT                      = FeatureKey.make();
+	private static final FeatureKey<Long>            RUINED_PORTAL_SALT                        = FeatureKey.make();
 	private static final FeatureKey<Byte>            SHIPWRECK_SPACING                         = FeatureKey.make();
 	private static final FeatureKey<Byte>            SHIPWRECK_SEPARATION                      = FeatureKey.make();
 	private static final FeatureKey<Byte>            OCEAN_RUINS_SPACING                       = FeatureKey.make();
 	private static final FeatureKey<Byte>            OCEAN_RUINS_SEPARATION                    = FeatureKey.make();
 	private static final FeatureKey<Byte>            NETHER_BUILDING_SPACING                   = FeatureKey.make();
 	private static final FeatureKey<Byte>            NETHER_BUILDING_SEPARATION                = FeatureKey.make();
-	private static final FeatureKey<Function<FastRand, Boolean>> NETHER_FORTRESS_FUNCTION         = FeatureKey.make();
-	private static final FeatureKey<Function<FastRand, Boolean>> BASTION_REMNANT_FUNCTION         = FeatureKey.make();
+	private static final FeatureKey<Byte>            RUINED_PORTAL_OVERWORLD_SPACING           = FeatureKey.make();
+	private static final FeatureKey<Byte>            RUINED_PORTAL_OVERWORLD_SEPARATION        = FeatureKey.make();
+	private static final FeatureKey<Byte>            RUINED_PORTAL_NETHER_SPACING              = FeatureKey.make();
+	private static final FeatureKey<Byte>            RUINED_PORTAL_NETHER_SEPARATION           = FeatureKey.make();
+	private static final FeatureKey<Function<FastRand, Boolean>> NETHER_FORTRESS_FUNCTION      = FeatureKey.make();
+	private static final FeatureKey<Function<FastRand, Boolean>> BASTION_REMNANT_FUNCTION      = FeatureKey.make();
 	private static final FeatureKey<Boolean>         BUGGY_STRUCTURE_COORDINATE_MATH           = FeatureKey.make();
 	private static final FeatureKey<Boolean>         BIOME_DATA_ORACLE_QUARTER_RES_OVERRIDE    = FeatureKey.make();
 	private static final FeatureKey<Boolean>         BIOME_DATA_ORACLE_ACCURATE_LOCATION_COUNT = FeatureKey.make();
@@ -174,6 +179,8 @@ public enum DefaultVersionFeatures {
 					LayerIds.WOODLAND_MANSION
 				).sinceExtend(RecognisedVersion._18w09a,
 					LayerIds.OCEAN_FEATURES
+				).sinceExtend(RecognisedVersion._20w16a,
+					LayerIds.RUINED_PORTALS
 				).construct())
 
 			.with(FeatureKey.BIOME_LIST, DefaultBiomes.DEFAULT_BIOMES)
@@ -269,6 +276,45 @@ public enum DefaultVersionFeatures {
 				).construct()
 			)
 			.with(NETHER_BUILDING_SEPARATION, VersionFeature.constant((byte) 4))
+			
+			.with(FeatureKey.RUINED_PORTAL_OVERWORLD_PRODUCER, scatteredFeature(
+				Resolution.CHUNK,
+				8,
+				null,
+				DefaultWorldIconTypes.RUINED_PORTAL,
+				Dimension.OVERWORLD,
+				RUINED_PORTAL_SALT,
+				RUINED_PORTAL_OVERWORLD_SPACING,
+				RUINED_PORTAL_OVERWORLD_SEPARATION))
+			.with(RUINED_PORTAL_OVERWORLD_SEPARATION, VersionFeature.<Byte> builder()
+					.init(
+						(byte) 15 // this was different at some point i think
+					).construct())
+			.with(RUINED_PORTAL_OVERWORLD_SPACING, VersionFeature.<Byte> builder()
+					.init(
+						(byte) 40 // this was different at some point i think
+					).construct())
+			.with(FeatureKey.RUINED_PORTAL_NETHER_PRODUCER, scatteredFeature(
+				Resolution.NETHER_CHUNK,
+				64,
+				null, // XXX: Nether biome checks when implemented
+				DefaultWorldIconTypes.RUINED_PORTAL,
+				Dimension.NETHER,
+				RUINED_PORTAL_SALT,
+				RUINED_PORTAL_NETHER_SPACING,
+				RUINED_PORTAL_NETHER_SEPARATION))
+			.with(RUINED_PORTAL_NETHER_SEPARATION, VersionFeature.<Byte> builder()
+					.init(
+						(byte) 10 // this was different at some point i think
+					).construct())
+			.with(RUINED_PORTAL_NETHER_SPACING, VersionFeature.<Byte> builder()
+					.init(
+						(byte) 25 // this was different at some point i think
+					).construct())
+			.with(RUINED_PORTAL_SALT, VersionFeature.<Long> builder()
+					.init(
+						34222645L
+					).construct())
 
 			.with(FeatureKey.END_CITY_PRODUCER, VersionFeature.<WorldIconProducer<List<EndIsland>>> builder()
 				.init(new NoopProducer<>())

@@ -119,6 +119,10 @@ public class WorldBuilder {
 						versionFeatures.get(FeatureKey.NETHER_FORTRESS_PRODUCER),
 						versionFeatures.get(FeatureKey.BASTION_REMNANT_PRODUCER)
 				),
+				new MultiProducer<>(
+						versionFeatures.get(FeatureKey.RUINED_PORTAL_OVERWORLD_PRODUCER),
+						versionFeatures.get(FeatureKey.RUINED_PORTAL_NETHER_PRODUCER)
+				),
 				versionFeatures.get(FeatureKey.END_CITY_PRODUCER));
 	}
 }
