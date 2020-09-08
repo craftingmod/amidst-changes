@@ -47,6 +47,8 @@ public class FeatureKey<T> {
 	public static final FeatureKey<WorldIconProducer<Void>> OCEAN_RUINS_PRODUCER              = make();
 	public static final FeatureKey<WorldIconProducer<Void>> SHIPWRECK_PRODUCER                = make();
 	public static final FeatureKey<WorldIconProducer<Void>> BURIED_TREASURE_PRODUCER          = make();
+	public static final FeatureKey<WorldIconProducer<Void>> RUINED_PORTAL_OVERWORLD_PRODUCER = make();
+	public static final FeatureKey<WorldIconProducer<Void>> RUINED_PORTAL_NETHER_PRODUCER    = make();
 	// @formatter:on
 
 

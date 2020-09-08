@@ -18,6 +18,7 @@ public enum DefaultWorldIconTypes {
 	// @formatter:off
 	NETHER_FORTRESS     ("nether_fortress",   "Nether Fortress"),
 	BASTION_REMNANT     ("bastion_remnant",   "Bastion Remnant"),
+	RUINED_PORTAL       ("ruined_portal",     "Ruined Portal"),
 	PLAYER              ("player",            "Player"),
 	STRONGHOLD          ("stronghold",        "Stronghold"),
 	JUNGLE              ("jungle",            "Jungle Temple"),
