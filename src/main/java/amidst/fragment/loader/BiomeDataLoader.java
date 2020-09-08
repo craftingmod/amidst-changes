@@ -40,7 +40,6 @@ public class BiomeDataLoader extends FragmentLoader {
 
 	@CalledOnlyBy(AmidstThread.FRAGMENT_LOADER)
 	private void doLoad(Fragment fragment, Dimension dimension) {
-		AmidstLogger.info("Dimension-Loader: " + dimension.getDisplayName());
 		if (dimension == Dimension.OVERWORLD) {
 			fragment.populateBiomeData(owBiomeDataOracle, Dimension.OVERWORLD);
 		} else if (dimension == Dimension.NETHER) {

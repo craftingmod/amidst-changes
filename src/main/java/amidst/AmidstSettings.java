@@ -26,9 +26,15 @@ public class AmidstSettings {
 	public final Setting<Boolean> showOceanMonuments;
 	public final Setting<Boolean> showWoodlandMansions;
 	public final Setting<Boolean> showOceanFeatures;
-	public final Setting<Boolean> showNetherFortresses;
-	public final Setting<Boolean> showBastionRemnant;
-	public final Setting<Boolean> showRuinedPortals;
+	// nether fortresses
+	public final Setting<Boolean> showNetherFortresses_OW;
+	public final Setting<Boolean> showNetherFortresses_Nether;
+	// bastion remnant
+	public final Setting<Boolean> showBastionRemnant_OW;
+	public final Setting<Boolean> showBastionRemnant_Nether;
+	// Ruined Portal
+	public final Setting<Boolean> showRuinedPortals_OW;
+	public final Setting<Boolean> showRuinedPortals_Nether;
 	public final Setting<Boolean> showEndCities;
 	public final Setting<Boolean> showEndGateways;
 
@@ -67,9 +73,16 @@ public class AmidstSettings {
 		showOceanMonuments         = Setting.createBoolean(  preferences, "oceanMonumentIcons",   true);
 		showWoodlandMansions       = Setting.createBoolean(  preferences, "woodlandMansionIcons", true);
 		showOceanFeatures          = Setting.createBoolean(  preferences, "oceanFeaturesIcons",   true);
-		showNetherFortresses       = Setting.createBoolean(  preferences, "netherFortressIcons",  true);
-		showBastionRemnant         = Setting.createBoolean(  preferences, "bastionRemnantIcons",  true);
-		showRuinedPortals          = Setting.createBoolean(  preferences, "ruinedPortalsIcons",   true);
+		// nether fortress : seperate Overworld & Nether
+		showNetherFortresses_OW      = Setting.createBoolean(  preferences, "netherFortressIcons_OW",  false);
+		showNetherFortresses_Nether  = Setting.createBoolean(  preferences, "netherFortressIcons_Nether",  true);
+		// bastion remnant
+		showBastionRemnant_OW        = Setting.createBoolean(  preferences, "bastionRemnantIcons_OW",  false);
+		showBastionRemnant_Nether    = Setting.createBoolean(  preferences, "bastionRemnantIcons_Nether",  true);
+		// ruined portal
+		showRuinedPortals_OW         = Setting.createBoolean(  preferences, "ruinedPortalsIcons_OW",   true);
+		showRuinedPortals_Nether     = Setting.createBoolean(  preferences, "ruinedPortalsIcons_Nether",   true);
+
 		showEndCities              = Setting.createBoolean(  preferences, "endCityIcons",         true);
 		showEndGateways            = Setting.createBoolean(  preferences, "endGatewayIcons",      true);
 

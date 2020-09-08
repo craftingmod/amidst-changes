@@ -1,5 +1,6 @@
 package amidst.fragment.layer;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -77,46 +78,46 @@ public class LayerBuilder {
 	}
 
 	private List<LayerDeclaration> createDeclarations(AmidstSettings settings, List<Integer> enabledLayers) {
-		LayerDeclaration[] declarations = new LayerDeclaration[LayerIds.NUMBER_OF_LAYERS];
-		// @formatter:off
-		declare(settings, declarations, enabledLayers, LayerIds.ALPHA,           null,                false, Setting.createImmutable(true));
-		declare(settings, declarations, enabledLayers, LayerIds.BIOME_DATA,      null, false, Setting.createImmutable(true));
-		declare(settings, declarations, enabledLayers, LayerIds.END_ISLANDS,     Dimension.END,       false, Setting.createImmutable(true));
-		declare(settings, declarations, enabledLayers, LayerIds.BACKGROUND,      null,                false, Setting.createImmutable(true));
-		declare(settings, declarations, enabledLayers, LayerIds.SLIME,           Dimension.OVERWORLD, false, settings.showSlimeChunks);
-		declare(settings, declarations, enabledLayers, LayerIds.GRID,            null,                true,  settings.showGrid);
-		declare(settings, declarations, enabledLayers, LayerIds.SPAWN,           Dimension.OVERWORLD, false, settings.showSpawn);
-		declare(settings, declarations, enabledLayers, LayerIds.STRONGHOLD,      Dimension.OVERWORLD, false, settings.showStrongholds);
-		declare(settings, declarations, enabledLayers, LayerIds.PLAYER,          null,                false, settings.showPlayers);
-		declare(settings, declarations, enabledLayers, LayerIds.VILLAGE,         Dimension.OVERWORLD, false, settings.showVillages);
-		declare(settings, declarations, enabledLayers, LayerIds.TEMPLE,          Dimension.OVERWORLD, false, settings.showTemples);
-		declare(settings, declarations, enabledLayers, LayerIds.MINESHAFT,       Dimension.OVERWORLD, false, settings.showMineshafts);
-		declare(settings, declarations, enabledLayers, LayerIds.OCEAN_MONUMENT,  Dimension.OVERWORLD, false, settings.showOceanMonuments);
-		declare(settings, declarations, enabledLayers, LayerIds.WOODLAND_MANSION,Dimension.OVERWORLD, false, settings.showWoodlandMansions);
-		declare(settings, declarations, enabledLayers, LayerIds.OCEAN_FEATURES,  Dimension.OVERWORLD, false, settings.showOceanFeatures);
-		declare(settings, declarations, enabledLayers, LayerIds.NETHER_FORTRESS, Dimension.NETHER, false, settings.showNetherFortresses);
-		declare(settings, declarations, enabledLayers, LayerIds.BASTION_REMNANT, Dimension.NETHER, false, settings.showBastionRemnant);
-		declare(settings, declarations, enabledLayers, LayerIds.RUINED_PORTALS,  Dimension.OVERWORLD, false, settings.showRuinedPortals);
-		declare(settings, declarations, enabledLayers, LayerIds.END_CITY,        Dimension.END,       false, settings.showEndCities);
-		declare(settings, declarations, enabledLayers, LayerIds.END_GATEWAY,     Dimension.END,       false, settings.showEndGateways);
-		// @formatter:on
-		return Collections.unmodifiableList(Arrays.asList(declarations));
-	}
 
-	private void declare(
-			AmidstSettings settings,
-			LayerDeclaration[] declarations,
-			List<Integer> enabledLayers,
-			int layerId,
-			Dimension dimension,
-			boolean drawUnloaded,
-			Setting<Boolean> isVisibleSetting) {
-		declarations[layerId] = new LayerDeclaration(
-				layerId,
-				dimension,
-				drawUnloaded,
-				enabledLayers.contains(layerId),
-				isVisibleSetting);
+		ArrayList<LayerDeclaration> declarations = new ArrayList<>(LayerIds.NUMBER_OF_LAYERS);
+		Dimension[] ALL = LayerDeclaration.DIMENSION_ALL;
+		Dimension[] OW_HELL = new Dimension[]{Dimension.OVERWORLD, Dimension.NETHER};
+
+		List<LayerDeclarationParam> declareList = Arrays.asList(
+				new LayerDeclarationParam(LayerIds.ALPHA, ALL, false, Setting.createImmutable(true)),
+				new LayerDeclarationParam(LayerIds.BIOME_DATA, ALL, false, Setting.createImmutable(true)),
+				new LayerDeclarationParam(LayerIds.END_ISLANDS, Dimension.END, false, Setting.createImmutable(true)),
+				new LayerDeclarationParam(LayerIds.BACKGROUND, ALL, false, Setting.createImmutable(true)),
+				new LayerDeclarationParam(LayerIds.SLIME, Dimension.OVERWORLD, false, settings.showSlimeChunks),
+				new LayerDeclarationParam(LayerIds.GRID, ALL, true, settings.showGrid),
+				new LayerDeclarationParam(LayerIds.SPAWN, Dimension.OVERWORLD, false, settings.showSpawn),
+				new LayerDeclarationParam(LayerIds.STRONGHOLD, Dimension.OVERWORLD, false, settings.showStrongholds),
+				new LayerDeclarationParam(LayerIds.PLAYER, ALL, false, settings.showPlayers),
+				new LayerDeclarationParam(LayerIds.VILLAGE, Dimension.OVERWORLD, false, settings.showVillages),
+				new LayerDeclarationParam(LayerIds.TEMPLE, Dimension.OVERWORLD, false, settings.showTemples),
+				new LayerDeclarationParam(LayerIds.MINESHAFT, Dimension.OVERWORLD, false, settings.showMineshafts),
+				new LayerDeclarationParam(LayerIds.OCEAN_MONUMENT, Dimension.OVERWORLD, false, settings.showOceanMonuments),
+				new LayerDeclarationParam(LayerIds.WOODLAND_MANSION, Dimension.OVERWORLD, false, settings.showWoodlandMansions),
+				new LayerDeclarationParam(LayerIds.OCEAN_FEATURES, Dimension.OVERWORLD, false, settings.showOceanFeatures),
+				new LayerDeclarationParam(LayerIds.NETHER_FORTRESS, OW_HELL, false, new Setting[]{settings.showNetherFortresses_OW, settings.showNetherFortresses_Nether}),
+				new LayerDeclarationParam(LayerIds.BASTION_REMNANT, OW_HELL, false, new Setting[]{settings.showBastionRemnant_OW, settings.showBastionRemnant_Nether}),
+				new LayerDeclarationParam(LayerIds.RUINED_PORTALS, OW_HELL, false, new Setting[]{settings.showRuinedPortals_OW, settings.showRuinedPortals_Nether}),
+				new LayerDeclarationParam(LayerIds.END_CITY, Dimension.END, false, settings.showEndCities),
+				new LayerDeclarationParam(LayerIds.END_GATEWAY, Dimension.END, false, settings.showEndGateways)
+		);
+
+		for (LayerDeclarationParam param : declareList) {
+			declarations.add(param.layerId, new LayerDeclaration(
+					param.layerId,
+					param.dimensions,
+					param.drawUnloaded,
+					enabledLayers.contains(param.layerId),
+					param.visibleMap
+			));
+		}
+
+		// @formatter:on
+		return Collections.unmodifiableList(declarations);
 	}
 
 	/**
@@ -182,5 +183,42 @@ public class LayerBuilder {
 				new WorldIconDrawer(declarations.get(LayerIds.END_GATEWAY),     zoom, worldIconSelection)
 		));
 		// @formatter:on
+	}
+
+	/**
+	 * Simple class to store layout element info
+	 */
+	private static class LayerDeclarationParam {
+		public int layerId;
+		public Dimension[] dimensions;
+		public boolean drawUnloaded;
+		public Setting<Boolean>[] visibleMap;
+		public LayerDeclarationParam(
+			int layerId,
+			Dimension[] dimensions,
+			boolean drawUnloaded,
+			Setting<Boolean>[] visibleMap
+		) {
+			this.layerId = layerId;
+			this.dimensions = dimensions;
+			this.drawUnloaded = drawUnloaded;
+			this.visibleMap = visibleMap;
+		}
+		public LayerDeclarationParam(
+			int layerId,
+			Dimension[] dimensions,
+			boolean drawUnloaded,
+			Setting<Boolean> isVisibleSetting
+		) {
+			this(layerId, dimensions, drawUnloaded, new Setting[]{isVisibleSetting});
+		}
+		public LayerDeclarationParam(
+				int layerId,
+				Dimension dimension,
+				boolean drawUnloaded,
+				Setting<Boolean> isVisibleSetting
+		) {
+			this(layerId, new Dimension[]{dimension}, drawUnloaded, isVisibleSetting);
+		}
 	}
 }

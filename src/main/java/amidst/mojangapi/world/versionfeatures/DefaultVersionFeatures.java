@@ -804,9 +804,8 @@ public enum DefaultVersionFeatures {
 				return features.get(FeatureKey.OVERWORLD_BIOME_DATA_ORACLE);
 			case NETHER:
 				Optional<BiomeDataOracle> oracle = features.get(FeatureKey.NETHER_BIOME_DATA_ORACLE);
-				if (oracle.isPresent()) {
-					return oracle.get();
-				}
+				// Let's just give overworld biome oracle..
+				return oracle.orElseGet(() -> features.get(FeatureKey.OVERWORLD_BIOME_DATA_ORACLE));
 			default:
 				throw new RuntimeException("Can't retrieve BiomeDataOracle for dimension " + dimension);
 		}

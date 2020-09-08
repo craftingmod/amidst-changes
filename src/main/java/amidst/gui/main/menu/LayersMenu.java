@@ -105,15 +105,18 @@ public class LayersMenu {
 		overworldLayer(settings.showOceanMonuments,       "Ocean Monument Icons",   getIcon("ocean_monument.png"),  MenuShortcuts.SHOW_OCEAN_MONUMENTS,   dimension, LayerIds.OCEAN_MONUMENT);
 		overworldLayer(settings.showWoodlandMansions,     "Woodland Mansion Icons", getIcon("woodland_mansion.png"),MenuShortcuts.SHOW_WOODLAND_MANSIONS, dimension, LayerIds.WOODLAND_MANSION);
 		overworldLayer(settings.showOceanFeatures,        "Ocean Features Icons",   getIcon("shipwreck.png"),       MenuShortcuts.SHOW_OCEAN_FEATURES,    dimension, LayerIds.OCEAN_FEATURES);
-		// overworldLayer(settings.showNetherFortresses,     "Nether Features Icons",  getIcon("nether_fortress.png"), MenuShortcuts.SHOW_NETHER_FEATURES,   dimension, LayerIds.NETHER_FEATURES);
-		overworldLayer(settings.showRuinedPortals,        "Ruined Portal Icons",    getIcon("ruined_portal.png"),   MenuShortcuts.SHOW_RUINED_PORTALS,    dimension, LayerIds.RUINED_PORTALS);
+		// Sharing overworld and nether
+		overworldLayer(settings.showNetherFortresses_OW,  "Nether Fortress Icons",  getIcon("nether_fortress.png"), MenuShortcuts.SHOW_NETHER_FORTRESS,   dimension, LayerIds.NETHER_FORTRESS);
+		overworldLayer(settings.showBastionRemnant_OW,	  "Bastion Remnant Icons",  getIcon("bastion_remnant.png"), MenuShortcuts.SHOW_BASTION_REMNENT,   dimension, LayerIds.BASTION_REMNANT);
+		overworldLayer(settings.showRuinedPortals_OW,     "Ruined Portal Icons",    getIcon("ruined_portal.png"),   MenuShortcuts.SHOW_RUINED_PORTALS,    dimension, LayerIds.RUINED_PORTALS);
 		// @formatter:on
 	}
 
 	@CalledOnlyBy(AmidstThread.EDT)
 	private void createNetherLayers(Dimension dimension) {
-		netherLayer(settings.showNetherFortresses, "Nether Fortress Icons", getIcon("nether_fortress.png"), MenuShortcuts.SHOW_NETHER_FORTRESS, dimension, LayerIds.NETHER_FORTRESS);
-		netherLayer(settings.showNetherFortresses, "Bastion Remnant Icons", getIcon("bastion_remnant.png"), MenuShortcuts.SHOW_BASTION_REMNENT, dimension, LayerIds.BASTION_REMNANT);
+		netherLayer(settings.showNetherFortresses_Nether, "Nether Fortress Icons", getIcon("nether_fortress.png"), MenuShortcuts.SHOW_NETHER_FORTRESS, dimension, LayerIds.NETHER_FORTRESS);
+		netherLayer(settings.showBastionRemnant_Nether, "Bastion Remnant Icons", getIcon("bastion_remnant.png"), MenuShortcuts.SHOW_BASTION_REMNENT, dimension, LayerIds.BASTION_REMNANT);
+		netherLayer(settings.showRuinedPortals_Nether, "Ruined Portal Icons",    getIcon("ruined_portal.png"),   MenuShortcuts.SHOW_RUINED_PORTALS,    dimension, LayerIds.RUINED_PORTALS);
 	}
 	
 	@CalledOnlyBy(AmidstThread.EDT)

@@ -57,7 +57,6 @@ public class BiomeDataOracle {
 		Resolution resolution = Resolution.from(useQuarterResolution);
 		int left = (int) corner.getXAs(resolution);
 		int top = (int) corner.getYAs(resolution);
-		AmidstLogger.info("Dimension: " + dimension.getDisplayName());
 		try {
 			return worldAccessor.getBiomeData(dimension, left, top, width, height, useQuarterResolution, biomeDataMapper);
 		} catch (MinecraftInterfaceException e) {
