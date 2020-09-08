@@ -62,7 +62,7 @@ public class PerViewerFacadeInjector {
 		BiomeToggleWidget biomeToggleWidget = new BiomeToggleWidget(CornerAnchorPoint.BOTTOM_RIGHT, biomeSelection, biomeWidget);
 		WorldOptions worldOptions = world.getWorldOptions();
 		return Arrays.asList(
-				new FpsWidget(                  CornerAnchorPoint.BOTTOM_LEFT,   new FramerateTimer(2),       new CpuUsageTimer(2),      settings.showFPS),
+				new FpsWidget(                  CornerAnchorPoint.BOTTOM_LEFT,   new FramerateTimer(2),       new CpuUsageTimer(1),      settings.showFPS),
 				new ScaleWidget(                CornerAnchorPoint.BOTTOM_CENTER, zoom,                               settings.showScale),
 				new SeedAndWorldTypeWidget(     CornerAnchorPoint.TOP_LEFT,      worldOptions.getWorldSeed(), worldOptions.getWorldType()),
 				new SelectedIconWidget(         CornerAnchorPoint.TOP_LEFT,      worldIconSelection),
