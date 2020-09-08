@@ -96,6 +96,7 @@ public class LayerBuilder {
 		declare(settings, declarations, enabledLayers, LayerIds.OCEAN_FEATURES,  Dimension.OVERWORLD, false, settings.showOceanFeatures);
 		declare(settings, declarations, enabledLayers, LayerIds.NETHER_FORTRESS, Dimension.NETHER, false, settings.showNetherFortresses);
 		declare(settings, declarations, enabledLayers, LayerIds.BASTION_REMNANT, Dimension.NETHER, false, settings.showBastionRemnant);
+		declare(settings, declarations, enabledLayers, LayerIds.RUINED_PORTALS,  Dimension.OVERWORLD, false, settings.showRuinedPortals);
 		declare(settings, declarations, enabledLayers, LayerIds.END_CITY,        Dimension.END,       false, settings.showEndCities);
 		declare(settings, declarations, enabledLayers, LayerIds.END_GATEWAY,     Dimension.END,       false, settings.showEndGateways);
 		// @formatter:on
@@ -144,6 +145,7 @@ public class LayerBuilder {
 				new WorldIconLoader<>(declarations.get(LayerIds.OCEAN_FEATURES),  world.getOceanFeaturesProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.NETHER_FORTRESS), world.getNetherFortressProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.BASTION_REMNANT), world.getBastionRemnantProducer()),
+				new WorldIconLoader<>(declarations.get(LayerIds.RUINED_PORTALS),  world.getRuinedPortalProducer()),
 				new WorldIconLoader<>(declarations.get(LayerIds.END_CITY),        world.getEndCityProducer(), Fragment::getLargeEndIslands),
 				new WorldIconLoader<>(declarations.get(LayerIds.END_GATEWAY),     world.getEndGatewayProducer(), Fragment::getEndIslands)
 		));
@@ -175,6 +177,7 @@ public class LayerBuilder {
 				new WorldIconDrawer(declarations.get(LayerIds.OCEAN_FEATURES),  zoom, worldIconSelection),
 				new WorldIconDrawer(declarations.get(LayerIds.NETHER_FORTRESS), zoom, worldIconSelection),
 				new WorldIconDrawer(declarations.get(LayerIds.BASTION_REMNANT), zoom, worldIconSelection),
+				new WorldIconDrawer(declarations.get(LayerIds.RUINED_PORTALS),  zoom, worldIconSelection),
 				new WorldIconDrawer(declarations.get(LayerIds.END_CITY),        zoom, worldIconSelection),
 				new WorldIconDrawer(declarations.get(LayerIds.END_GATEWAY),     zoom, worldIconSelection)
 		));

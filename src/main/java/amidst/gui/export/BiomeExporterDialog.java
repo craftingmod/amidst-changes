@@ -32,7 +32,6 @@ import java.util.function.Supplier;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 
-import amidst.Amidst;
 import amidst.documentation.NotThreadSafe;
 import amidst.gui.main.Actions;
 import amidst.gui.main.PNGFileFilter;
@@ -51,6 +50,7 @@ import amidst.mojangapi.world.coordinates.CoordinatesInWorld;
 import amidst.mojangapi.world.oracle.BiomeDataOracle;
 import amidst.settings.Setting;
 import amidst.settings.biomeprofile.BiomeProfileSelection;
+import amidst.util.SwingUtils;
 
 import static java.awt.GridBagConstraints.*;
 
@@ -414,7 +414,7 @@ public class BiomeExporterDialog {
 
 	public void dispose() {
 		menuBarSupplier.get().setMenuItemsEnabled(new String[] { "Export Biomes to Image ...", "Biome Profile" }, true);
-		Amidst.destroyComponentTree(dialog);
+		SwingUtils.destroyComponentTree(dialog);
 	}
 	
 	public void softDispose() {

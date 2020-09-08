@@ -47,6 +47,7 @@ public enum MenuShortcuts implements MenuShortcut {
 	// It's maybe... okay..
 	SHOW_NETHER_FORTRESS("menu 1"),
 	SHOW_BASTION_REMNENT("menu 2"),
+	SHOW_RUINED_PORTALS("menu shift 1"),
 
 	// It's okay to duplicate the Overworld layers shortcuts here, because
 	// the End layers will never be active at the same time.

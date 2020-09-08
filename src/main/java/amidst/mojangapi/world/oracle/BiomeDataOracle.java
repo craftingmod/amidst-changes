@@ -1,7 +1,6 @@
 package amidst.mojangapi.world.oracle;
 
 import java.util.List;
-import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -17,10 +16,11 @@ import amidst.mojangapi.world.biome.BiomeList;
 import amidst.mojangapi.world.biome.UnknownBiomeIdException;
 import amidst.mojangapi.world.coordinates.CoordinatesInWorld;
 import amidst.mojangapi.world.coordinates.Resolution;
+import amidst.util.FastRand;
 
 @ThreadSafe
 public class BiomeDataOracle {
-	private final MinecraftInterface.World minecraftWorld;
+	private final MinecraftInterface.WorldAccessor worldAccessor;
 	private final Dimension dimension;
 	private final BiomeList biomeList;
 	private final boolean quarterResOverride;
@@ -33,8 +33,8 @@ public class BiomeDataOracle {
 		public boolean accurateLocationCount = true;
 	}
 
-	public BiomeDataOracle(MinecraftInterface.World minecraftWorld, Dimension dimension, BiomeList biomeList, Config config) {
-		this.minecraftWorld = minecraftWorld;
+	public BiomeDataOracle(MinecraftInterface.WorldAccessor worldAccessor, Dimension dimension, BiomeList biomeList, Config config) {
+		this.worldAccessor = worldAccessor;
 		this.dimension = dimension;
 		this.biomeList = biomeList;
 		this.quarterResOverride = config.quarterResOverride;
@@ -59,7 +59,7 @@ public class BiomeDataOracle {
 		int top = (int) corner.getYAs(resolution);
 		AmidstLogger.info("Dimension: " + dimension.getDisplayName());
 		try {
-			return minecraftWorld.getBiomeData(dimension, left, top, width, height, useQuarterResolution, biomeDataMapper);
+			return worldAccessor.getBiomeData(dimension, left, top, width, height, useQuarterResolution, biomeDataMapper);
 		} catch (MinecraftInterfaceException e) {
 			AmidstLogger.error(e);
 			AmidstMessageBox.displayError("Error", e);
@@ -119,11 +119,11 @@ public class BiomeDataOracle {
 			int chunkY,
 			int size,
 			List<Biome> validBiomes,
-			Random random) {
+			FastRand random) {
 		return findValidLocation(getMiddleOfChunk(chunkX), getMiddleOfChunk(chunkY), size, validBiomes, random);
 	}
 
-	public CoordinatesInWorld findValidLocation(int x, int y, int size, List<Biome> validBiomes, Random random) {
+	public CoordinatesInWorld findValidLocation(int x, int y, int size, List<Biome> validBiomes, FastRand random) {
 		return doFindValidLocation(x, y, size, validBiomes, random, accurateLocationCount);
 	}
 
@@ -132,7 +132,7 @@ public class BiomeDataOracle {
 	// succeeded; it is now always incremented.
 	private CoordinatesInWorld doFindValidLocation(
 			int x, int y, int size, List<Biome> validBiomes,
-			Random random, boolean accurateLocationCount) {
+			FastRand random, boolean accurateLocationCount) {
 		int left = x - size >> 2;
 		int top = y - size >> 2;
 		int right = x + size >> 2;
@@ -180,12 +180,12 @@ public class BiomeDataOracle {
 
 	public Biome getBiomeAt(int x, int y, boolean useQuarterResolution)
 			throws UnknownBiomeIdException, MinecraftInterfaceException {
-		int biomeIndex = minecraftWorld.getBiomeData(dimension, x, y, 1, 1, useQuarterResolution, biomeData -> biomeData[0]);
+		int biomeIndex = worldAccessor.getBiomeData(dimension, x, y, 1, 1, useQuarterResolution, biomeData -> biomeData[0]);
 		return biomeList.getById(biomeIndex);
 	}
 
 	private<T> T getQuarterResolutionBiomeData(int x, int y, int width, int height, Function<int[], T> biomeDataMapper)
 			throws MinecraftInterfaceException {
-		return minecraftWorld.getBiomeData(dimension, x, y, width, height, true, biomeDataMapper);
+		return worldAccessor.getBiomeData(dimension, x, y, width, height, true, biomeDataMapper);
 	}
 }

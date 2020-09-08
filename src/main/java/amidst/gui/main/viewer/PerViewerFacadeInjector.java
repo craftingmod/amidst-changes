@@ -23,7 +23,6 @@ import amidst.gui.main.Actions;
 import amidst.gui.main.viewer.widget.BiomeExporterProgressWidget;
 import amidst.gui.main.viewer.widget.BiomeToggleWidget;
 import amidst.gui.main.viewer.widget.BiomeWidget;
-import amidst.gui.main.viewer.widget.CpuUsageTimer;
 import amidst.gui.main.viewer.widget.CursorInformationWidget;
 import amidst.gui.main.viewer.widget.DebugWidget;
 import amidst.gui.main.viewer.widget.FpsWidget;
@@ -62,7 +61,7 @@ public class PerViewerFacadeInjector {
 		BiomeToggleWidget biomeToggleWidget = new BiomeToggleWidget(CornerAnchorPoint.BOTTOM_RIGHT, biomeSelection, biomeWidget);
 		WorldOptions worldOptions = world.getWorldOptions();
 		return Arrays.asList(
-				new FpsWidget(                  CornerAnchorPoint.BOTTOM_LEFT,   new FramerateTimer(2),       new CpuUsageTimer(2),      settings.showFPS),
+				new FpsWidget(                  CornerAnchorPoint.BOTTOM_LEFT,   new FramerateTimer(2),              settings.showFPS),
 				new ScaleWidget(                CornerAnchorPoint.BOTTOM_CENTER, zoom,                               settings.showScale),
 				new SeedAndWorldTypeWidget(     CornerAnchorPoint.TOP_LEFT,      worldOptions.getWorldSeed(), worldOptions.getWorldType()),
 				new SelectedIconWidget(         CornerAnchorPoint.TOP_LEFT,      worldIconSelection),
@@ -114,7 +113,7 @@ public class PerViewerFacadeInjector {
 				.create(settings, world, biomeSelection, worldIconSelection, zoom, accelerationCounter);
 		this.graph = new FragmentGraph(layerManager.getDeclarations(), fragmentManager);
 		this.translator = new FragmentGraphToScreenTranslator(graph, zoom);
-		this.fragmentQueueProcessor = fragmentManager.createQueueProcessor(layerManager, settings.dimension);
+		this.fragmentQueueProcessor = fragmentManager.createQueueProcessor(layerManager, settings.dimension, graph);
 		this.layerReloader = layerManager.createLayerReloader(world);
 		this.progressEntryHolder = new AtomicReference<Entry<ProgressEntryType, Integer>>();
 		AtomicReference<JComponent> parentComponentReference = new AtomicReference<>();
