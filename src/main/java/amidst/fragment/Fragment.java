@@ -38,11 +38,11 @@ import amidst.mojangapi.world.oracle.end.SmallEndIsland;
  * It is possible that a thread that uses the data in the fragment continues to
  * use them after isLoaded is set to false. However, all write operations are
  * called from either the fragment loading thread, the threads from
- * [Private] `FragmentQueueProcessor#fragWorkers`, or the EDT during the
- * construction of the fragment. While the fragment is constructed it will only
- * be accessible by one thread. An exception to that rule is the instance
- * variable alpha. It is altered from the drawing thread, however this should
- * not cause any issues. </br>
+ * {link @private FragmentManager#fragWorkers}, or the EDT during theconstruction of
+ * the fragment. While the fragment is constructed it will only be accessible
+ * by one thread. An exception to that rule is the instance variable alpha.
+ * It is altered from the drawing thread, however this should not cause any
+ * issues. </br>
  * </br>
  * Immediately after a new instance of this class is created, it is passed to
  * all FragmentConstructors. At that point in time, no other thread can access
@@ -197,6 +197,7 @@ public class Fragment {
 	}
 
 	@CalledOnlyBy(AmidstThread.FRAGMENT_LOADER)
+	// can be recycled if it's not loading
 	public boolean recycle() {
 		if (!this.isLoading.get()) {
 			this.isLoaded.set(false);
