@@ -79,6 +79,8 @@ public class BiomeExporterDialog {
 
 	private WorldOptions worldOptions;
 	private BiomeDataOracle biomeDataOracle;
+	private BiomeDataOracle overworldBiomeDataOracle;
+	private BiomeDataOracle netherBiomeDataOracle;
 	private Consumer<Entry<ProgressEntryType, Integer>> progressListener;
 
 	public BiomeExporterDialog(BiomeExporter biomeExporter, Frame parentFrame, BiomeProfileSelection biomeProfileSelection,
@@ -98,7 +100,7 @@ public class BiomeExporterDialog {
 		this.bottomSpinner         = createCoordinateSpinner();
 		this.fullResCheckBox       = createFullResCheckbox();
 		this.pathField             = createPathField();
-		this.dimensionSelection    = new JComboBox<String>(new String[] {"Overworld", "The nether"});
+		this.dimensionSelection    = createDimensionSelectionBox();
 		this.browseButton          = createBrowseButton();
 		this.exportButton          = createExportButton();
 		this.previewImage          = new BufferedImage(PREVIEW_SIZE, PREVIEW_SIZE, BufferedImage.TYPE_INT_ARGB);
@@ -130,6 +132,19 @@ public class BiomeExporterDialog {
 		return newSpinner;
 	}
 
+	private JComboBox<String> createDimensionSelectionBox() {
+		JComboBox<String> newBox = new JComboBox<String>(new String[] {"Overworld"});
+		newBox.addActionListener(e -> {
+			if (newBox.getSelectedIndex() == 0) {
+				this.biomeDataOracle = this.overworldBiomeDataOracle;
+			} else if (newBox.getSelectedIndex() == 1) {
+				this.biomeDataOracle = this.netherBiomeDataOracle;
+			}
+			renderPreview();
+		});
+		return newBox;
+	}
+
 	private JLabel createPreviewLabel() {
 		JLabel newLabel = new JLabel();
 
@@ -139,7 +154,6 @@ public class BiomeExporterDialog {
 	}
 
 	private JButton createExportButton() {
-		Dimension dimen = new Dimension[] {Dimension.OVERWORLD, Dimension.NETHER}[dimensionSelection.getSelectedIndex()];
 		JButton exportButton = new JButton("Export");
 		exportButton.addActionListener((e) -> {
 			try {
@@ -153,6 +167,7 @@ public class BiomeExporterDialog {
 
 			CoordinatesInWorld topLeft = getTopLeftCoordinates();
 			CoordinatesInWorld bottomRight = getBottomRightCoordinates();
+			Dimension dimen = new Dimension[] {Dimension.OVERWORLD, Dimension.NETHER}[dimensionSelection.getSelectedIndex()];
 			if (verifyImageCoordinates(topLeft, bottomRight) && verifyPathString(pathField.getText())) {
 				Path path = Paths.get(pathField.getText());
 				lastBiomeExportPath.set(path.toAbsolutePath().getParent().toString());
@@ -395,7 +410,14 @@ public class BiomeExporterDialog {
 		menuBarSupplier.get().setMenuItemsEnabled(new String[] { "Export Biomes to Image ...", "Biome Profile" }, false);
 
 		this.worldOptions = world.getWorldOptions();
-		this.biomeDataOracle = world.getOverworldBiomeDataOracle();
+		this.overworldBiomeDataOracle = world.getOverworldBiomeDataOracle();
+		if (world.getNetherBiomeDataOracle().isPresent()) {
+			this.netherBiomeDataOracle = world.getNetherBiomeDataOracle().get();
+			this.dimensionSelection.setModel(new DefaultComboBoxModel<String>(new String[]{"Overworld", "The Netherr"}));
+		} else {
+			this.dimensionSelection.setModel(new DefaultComboBoxModel<String>(new String[]{"Overworld"}));
+		}
+		this.biomeDataOracle = this.overworldBiomeDataOracle;
 		this.progressListener = progressListener;
 
 		CoordinatesInWorld defaultTopLeft = translator.screenToWorld(new Point(0, 0));
